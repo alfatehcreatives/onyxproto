@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Onyx POS">
-  <link rel="apple-touch-icon" href="icon.png">
+  <link class="apple-touch-icon" href="icon.png">
   <meta name="mobile-web-app-capable" content="yes">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   
@@ -1167,12 +1167,23 @@
       });
     }
 
-    // Process a successfully captured barcode directly
+    // Process a successfully captured barcode directly (Context-Aware to check if product dialog is open)
     function processBarcodeAction(barcode) {
       barcode = barcode.trim();
       if (!barcode) return;
 
-      // Find product with matching barcode
+      // Check if Add/Edit Product Modal is currently open
+      const modalInv = document.getElementById('modalInventory');
+      if (modalInv && !modalInv.classList.contains('hidden')) {
+        const barcodeInp = document.getElementById('modalInvBarcode');
+        if (barcodeInp) {
+          barcodeInp.value = barcode;
+          showNotification(`Barcode "${barcode}" captured inside product setup form!`);
+        }
+        return;
+      }
+
+      // Find product with matching barcode inside the active business context
       const product = state.inventory.find(i => i.barcode === barcode && i.businessId === state.currentBusinessId);
       
       if (product) {
@@ -1253,6 +1264,7 @@
       document.getElementById('modalAlert').classList.add('hidden');
     }
 
+    // --- CUSTOM PROMPT CONFIRM DIALOG ---
     function showCustomConfirm(msg, onProceed, title = "Verification Required") {
       document.getElementById('confirmTitle').innerText = title;
       document.getElementById('confirmMessage').innerText = msg;
@@ -1298,7 +1310,6 @@
       barcodeTargetInputId = inputId;
       document.getElementById('modalBarcodeScan').classList.remove('hidden');
       
-      // Delay scanner start slightly to avoid layout flicker
       setTimeout(() => {
         html5QrcodeScanner = new Html5Qrcode("cameraScanViewport");
         const config = { fps: 15, qrbox: { width: 250, height: 150 } };
@@ -1311,13 +1322,11 @@
             document.getElementById(barcodeTargetInputId).value = decodedText;
             stopBarcodeScan();
             
-            // If scanning on Cashier tab directly, immediately process to ticket
-            if (barcodeTargetInputId === 'registerSearch') {
-              processBarcodeAction(decodedText);
-            }
+            // Route barcode context-aware action triggers
+            processBarcodeAction(decodedText);
           },
           () => {
-            // Quiet fail handler for constant scans
+            // Quiet fail handler for constant camera scanning frames
           }
         ).catch((err) => {
           showCustomAlert("Could not start camera. Please verify camera permissions are granted.", "Scanner Error");
@@ -1337,7 +1346,7 @@
       }
     }
 
-    // --- CLEAR FILTERS ---
+    // --- CLEAR DATE FILTERS ---
     function clearDateFilter(tab) {
       document.getElementById(`${tab}FilterStart`).value = '';
       document.getElementById(`${tab}FilterEnd`).value = '';
@@ -2842,7 +2851,7 @@
       } else if (reportType === 'reports') {
         const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
         const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
-        const inventory = state.inventory.filter(i => i.businessId === state.currentBusinessId);
+        const inventory = state.inventory.filter(i => i.quantity >= 0); // Include generic items checking branch logic
 
         const startVal = document.getElementById('reportsFilterStart').value;
         const endVal = document.getElementById('reportsFilterEnd').value;
@@ -2865,7 +2874,7 @@
         });
 
         const averageMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(1) : '0.0';
-        const lowStockCount = inventory.filter(i => i.quantity <= 10).length;
+        const lowStockCount = inventory.filter(i => i.businessId === state.currentBusinessId && i.quantity <= 10).length;
 
         // Recalculate dynamic category sales mapping inside reports PDF generator to avoid undefined error
         const categorySalesMapPDF = {};

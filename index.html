@@ -3,23 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OnyxPOS - Multi-Business Hub</title>
+  <title>OnyxPOS - Easy Shop & Stock Manager</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts for Premium Sans Typography -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#000000">
-    <!-- iOS Safari PWA Support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Onyx POS">
-<link rel="apple-touch-icon" href="icon.png">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#000000">
+  <!-- iOS Safari PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Onyx POS">
+  <link rel="apple-touch-icon" href="icon.png">
   <meta name="mobile-web-app-capable" content="yes">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- HTML5 QR Code Scanner Library for Camera Barcode Scanning -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   
   <script>
     tailwind.config = {
@@ -40,7 +44,6 @@
     }
   </script>
   <style>
-    /* Premium High Contrast Light Variable Styling Only */
     :root {
       --bg-main: #FAFAFA;
       --bg-panel: #FFFFFF;
@@ -69,7 +72,6 @@
     .border-theme {
       border-color: var(--border-color);
     }
-    /* Hide scrollbars but keep functionality */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -77,19 +79,26 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    /* Printing Frame Custom CSS for POS & Thermal */
     @media print {
-      @page { margin: 0; }
-      body * { visibility: hidden; }
-      body { background: #FFF !important; color: #000 !important; }
-      #printArea, #printArea * { visibility: visible; }
+      body {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+      }
+      body > *:not(#printArea) {
+        display: none !important;
+      }
       #printArea {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        padding: 0;
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #printArea * {
+        visibility: visible !important;
       }
     }
   </style>
@@ -101,12 +110,12 @@
   <!-- ========================================== -->
   <div class="lg:hidden w-full panel-card border-b border-theme p-5 flex items-center justify-between z-30 sticky top-0">
     <div class="flex items-center gap-3">
-      <div class="p-2 bg-black text-white rounded-xl">
-        <i data-lucide="store" class="w-5 h-5"></i>
+      <div class="w-10 h-10 flex items-center justify-center overflow-hidden">
+        <img src="icon.png" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\'><rect width=\'20\' height=\'12\' x=\'2\' y=\'10\' rx=\'2\'/><path d=\'M12 2 2 7h20L12 2Z\'/></svg>'" class="w-full h-full object-contain" alt="OnyxPOS Logo">
       </div>
       <div>
         <h1 class="font-extrabold text-base tracking-tight text-black">OnyxPOS</h1>
-        <p class="text-[9px] tracking-widest uppercase font-bold text-muted">Enterprise</p>
+        <p class="text-[9px] tracking-widest uppercase font-bold text-muted">Shop Manager</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -122,15 +131,13 @@
   <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 lg:static w-72 panel-card border-r border-theme flex flex-col shrink-0 z-40 transition-transform duration-350 ease-in-out h-screen">
     
     <!-- Header Block (Desktop Only) -->
-    <div class="hidden lg:flex p-6 border-b border-theme items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="p-2.5 bg-black text-white rounded-2xl shadow-xl">
-          <i data-lucide="store" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <h1 class="font-extrabold text-lg tracking-tight text-black">OnyxPOS</h1>
-          <p class="text-[10px] tracking-widest uppercase font-bold text-muted">Enterprise Hub</p>
-        </div>
+    <div class="hidden lg:flex p-6 border-b border-theme items-center gap-3">
+      <div class="w-12 h-12 flex items-center justify-center overflow-hidden shrink-0">
+        <img src="icon.png" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\'><rect width=\'20\' height=\'12\' x=\'2\' y=\'10\' rx=\'2\'/><path d=\'M12 2 2 7h20L12 2Z\'/></svg>'" class="w-full h-full object-contain" alt="OnyxPOS Logo">
+      </div>
+      <div>
+        <h1 class="font-extrabold text-lg tracking-tight text-black">OnyxPOS</h1>
+        <p class="text-[10px] tracking-widest uppercase font-bold text-muted">Shop Hub</p>
       </div>
     </div>
 
@@ -143,7 +150,7 @@
 
     <!-- Active Business Swapper -->
     <div class="p-5 border-b border-theme bg-opacity-20 bg-black">
-      <label class="block text-[10px] uppercase tracking-wider font-extrabold text-muted mb-2">Active Business</label>
+      <label class="block text-[10px] uppercase tracking-wider font-extrabold text-muted mb-2">Active Branch</label>
       <div class="relative mb-2">
         <select id="businessSelector" class="w-full bg-transparent border border-theme rounded-xl p-3 text-xs font-semibold focus:ring-1 focus:ring-current outline-none cursor-pointer appearance-none text-black">
           <!-- Dynamic businesses injected here -->
@@ -154,7 +161,7 @@
       </div>
       <button onclick="openBusinessModal()" class="w-full mt-2 bg-transparent hover:bg-zinc-200 border border-theme text-black text-[11px] font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all">
         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-        Add Business
+        Add Branch Store
       </button>
     </div>
 
@@ -164,17 +171,17 @@
       
       <button onclick="switchTab('register')" id="nav-register" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all bg-black text-white">
         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-        <span>POS Cashier</span>
+        <span>Cashier Checkout</span>
       </button>
 
       <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="package" class="w-4 h-4"></i>
-        <span>Stock Vault</span>
+        <span>Stock Manager</span>
       </button>
 
       <button onclick="switchTab('credit')" id="nav-credit" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="credit-card" class="w-4 h-4"></i>
-        <span>Credit Ledger</span>
+        <span>Customer & Credit Ledger</span>
       </button>
 
       <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
@@ -190,21 +197,17 @@
 
     <!-- Sidebar Footer Actions & Watermark -->
     <div class="p-5 mt-auto space-y-6">
-      
-
-      <!-- Watermark Blended -->
       <div class="text-center opacity-40 hover:opacity-100 transition-opacity pb-2">
         <a href="https://alfatehcreative.agency/" target="_blank" class="text-[9px] font-bold text-muted uppercase tracking-widest leading-relaxed inline-block">
           Made by Asim Lone<br/>@alfatehcreatives
         </a>
       </div>
 
-            <!-- Hard Reset Database -->
-      <button onclick="hardResetData()" title="Wipe database & restart fresh" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all text-vibrantRed bg-vibrantRed/10 hover:bg-vibrantRed/20 border border-vibrantRed/20">
+      <!-- Hard Reset Database -->
+      <button onclick="triggerHardResetConfirmation()" title="Wipe database & restart fresh" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all text-vibrantRed bg-vibrantRed/10 hover:bg-vibrantRed/20 border border-vibrantRed/20">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
         <span>Wipe Database</span>
       </button>
-
     </div>
   </aside>
 
@@ -219,9 +222,9 @@
     <!-- Top Header Bar (Unified) -->
     <header class="panel-card border-b border-theme px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
       <div>
-        <h2 id="activeTabTitle" class="text-xl lg:text-2xl font-black tracking-tight text-black">POS Cashier</h2>
+        <h2 id="activeTabTitle" class="text-xl lg:text-2xl font-black tracking-tight text-black">Cashier Checkout</h2>
         <p class="text-xs text-muted mt-0.5">
-          Active Branch: <span id="headerBusinessName" class="font-extrabold underline text-black">No Business Configured</span>
+          Active Branch Store: <span id="headerBusinessName" class="font-extrabold underline text-black">No Store Configured</span>
         </p>
       </div>
 
@@ -256,10 +259,15 @@
                   type="text" 
                   id="registerSearch"
                   oninput="renderRegisterGrid()"
-                  placeholder="Search vault items..."
+                  placeholder="Type Name or Scan Barcode..."
                   class="w-full bg-zinc-100 border border-theme rounded-xl py-2 pl-10 pr-4 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-current"
                 />
               </div>
+
+              <!-- Barcode Live Cam Trigger -->
+              <button onclick="startBarcodeScan('registerSearch')" class="p-2.5 bg-zinc-100 border border-theme hover:bg-zinc-200 text-black rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all" title="Scan with Camera">
+                <i data-lucide="scan-barcode" class="w-4 h-4"></i> Scan
+              </button>
               
               <!-- Quick Category Filter -->
               <div class="w-full sm:w-auto">
@@ -273,7 +281,7 @@
               </div>
 
               <!-- Export / PDF Button -->
-              <button onclick="exportViewToPDF('registerItemGrid', 'POS Register Items')" class="px-4 py-2 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black" title="Download Register View as PDF">
+              <button onclick="exportViewToPDF('register', 'POS Register Items')" class="px-4 py-2 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black" title="Download Register View as PDF">
                 <i data-lucide="file-text" class="w-3.5 h-3.5"></i> PDF
               </button>
             </div>
@@ -291,7 +299,7 @@
               <div class="p-5 border-b border-theme flex justify-between items-center bg-zinc-50">
                 <div class="flex items-center gap-2">
                   <i data-lucide="receipt" class="text-muted w-5 h-5"></i>
-                  <h3 class="font-bold text-sm tracking-tight text-black">Active Ticket</h3>
+                  <h3 class="font-bold text-sm tracking-tight text-black">Active Receipt</h3>
                 </div>
                 <span id="cartCountBadge" class="px-2.5 py-1 bg-zinc-200 rounded-full text-[10px] font-extrabold text-black">
                   0 Items
@@ -315,15 +323,25 @@
                 </div>
 
                 <!-- Dyn Client field for Credit accounts -->
-                <div id="checkoutCreditDetails" class="hidden animate-fadeIn space-y-1.5">
-                  <label class="block text-[10px] font-bold uppercase tracking-wider text-black">Borrower Name *</label>
-                  <input 
-                    type="text" 
-                    id="checkoutCustomerName"
-                    placeholder="e.g. Robert Stark"
-                    class="w-full bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-medium text-black focus:outline-none focus:ring-1 focus:ring-current"
-                  />
-                  <p class="text-[9px] text-muted">This balance is automatically synced inside the Credit tab.</p>
+                <div id="checkoutCreditDetails" class="hidden animate-fadeIn space-y-2">
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-black">Person's Name *</label>
+                    <input 
+                      type="text" 
+                      id="checkoutCustomerName"
+                      list="borrowerNames"
+                      placeholder="e.g. Robert Stark"
+                      class="w-full bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-medium text-black focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-black">Optional Due Date</label>
+                    <input 
+                      type="date" 
+                      id="checkoutDueDate"
+                      class="w-full bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-medium text-black focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <!-- Totals -->
@@ -343,7 +361,7 @@
                   <button onclick="processCheckout()" class="col-span-4 py-3.5 bg-black text-white hover:scale-[1.01] active:scale-[0.99] font-black rounded-xl text-xs uppercase tracking-wider transition-all">
                     Process Payment
                   </button>
-                  <button onclick="triggerReceiptPrint()" class="col-span-1 p-3 bg-zinc-200 hover:bg-zinc-350 text-black rounded-xl text-xs flex items-center justify-center transition-all" title="Generate and Print Receipt">
+                  <button onclick="triggerReceiptPrint()" class="col-span-1 p-3 bg-zinc-200 hover:bg-zinc-350 text-black rounded-xl text-xs flex items-center justify-center transition-all" title="Print Mini Receipt">
                     <i data-lucide="printer" class="w-4 h-4"></i>
                   </button>
                 </div>
@@ -372,10 +390,15 @@
                   type="text" 
                   id="inventorySearch"
                   oninput="renderInventoryTable()"
-                  placeholder="Search SKU catalog..."
+                  placeholder="Search name or scan barcode..."
                   class="w-full bg-zinc-100 border border-theme rounded-xl py-2 pl-10 pr-4 text-xs font-medium text-black focus:outline-none"
                 />
               </div>
+
+              <!-- Live Barcode Scan -->
+              <button onclick="startBarcodeScan('inventorySearch')" class="p-2.5 bg-zinc-100 border border-theme hover:bg-zinc-200 text-black rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all" title="Scan with Camera">
+                <i data-lucide="scan-barcode" class="w-4 h-4"></i> Scan
+              </button>
 
               <!-- Categories Filter -->
               <div class="w-full sm:w-auto flex items-center gap-2">
@@ -388,7 +411,7 @@
                 </select>
                 
                 <!-- Category Creation shortcut icon -->
-                <button onclick="openCategoryModal()" title="Manage/Add Categories" class="p-2.5 bg-zinc-100 border border-theme text-black rounded-xl">
+                <button onclick="openCategoryModal()" title="Manage Categories" class="p-2.5 bg-zinc-100 border border-theme text-black rounded-xl">
                   <i data-lucide="folder-open" class="w-4 h-4"></i>
                 </button>
               </div>
@@ -396,7 +419,7 @@
 
             <!-- Action buttons -->
             <div class="flex items-center gap-2 w-full md:w-auto">
-              <button onclick="exportViewToPDF('inventoryTableBody', 'Inventory Report')" class="px-4 py-3 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black">
+              <button onclick="exportViewToPDF('inventory', 'Inventory Report')" class="px-4 py-3 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black">
                 <i data-lucide="file-text" class="w-4 h-4"></i>
                 Export Report
               </button>
@@ -414,12 +437,12 @@
               <table class="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                   <tr class="bg-zinc-100 border-b border-theme">
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Product Catalog ID</th>
+                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Product Name / Barcode</th>
                     <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Category</th>
                     <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Purchase Cost</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Retail Checkout Price</th>
+                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Sale Price</th>
                     <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider text-center">In Stock</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Auto Stamps (Saved / Updated)</th>
+                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Auto Stamps</th>
                     <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
@@ -441,12 +464,11 @@
           
           <!-- Core Credit Dashboard Numbers -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
             <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between">
               <div class="space-y-1">
-                <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">We Owe (Account Payables)</span>
+                <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">We Owe (Payables)</span>
                 <p id="totalPayableText" class="text-2xl font-black text-vibrantRed font-mono">0.00</p>
-                <p class="text-[9px] text-muted">Total liabilities from bulk buys</p>
+                <p class="text-[9px] text-muted">What we owe suppliers</p>
               </div>
               <div class="p-3 bg-vibrantRed/10 rounded-2xl text-vibrantRed border border-vibrantRed/15">
                 <i data-lucide="trending-up" class="w-6 h-6"></i>
@@ -457,7 +479,7 @@
               <div class="space-y-1">
                 <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">Owed to Us (Receivables)</span>
                 <p id="totalReceivableText" class="text-2xl font-black text-vibrantGreen font-mono">0.00</p>
-                <p class="text-[9px] text-muted">Accumulated client ledger balance</p>
+                <p class="text-[9px] text-muted">What customers owe us</p>
               </div>
               <div class="p-3 bg-vibrantGreen/10 rounded-2xl text-vibrantGreen border border-vibrantGreen/15">
                 <i data-lucide="trending-down" class="w-6 h-6"></i>
@@ -466,62 +488,45 @@
 
             <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between">
               <div class="space-y-1">
-                <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">Net Position Balance</span>
+                <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">Net Leverage Standing</span>
                 <p id="netLiquidityText" class="text-2xl font-black font-mono">0.00</p>
-                <p class="text-[9px] text-muted">Net leverage standing value</p>
+                <p class="text-[9px] text-muted">Net credit position</p>
               </div>
               <div class="p-3 bg-zinc-200 rounded-2xl border border-theme">
                 <i data-lucide="scale" class="w-6 h-6 text-muted"></i>
               </div>
             </div>
-
           </div>
 
-          <!-- Controls panel -->
-          <div class="panel-card p-4 rounded-[22px] border border-theme flex items-center justify-between">
-            <h3 class="font-extrabold text-xs uppercase tracking-wider text-black">Consolidated Credit Log</h3>
-            <div class="flex items-center gap-2">
-              <button onclick="exportViewToPDF('tab-credit', 'Credit Ledger')" class="px-4 py-2.5 bg-zinc-100 border border-theme hover:bg-zinc-200 text-black rounded-xl text-xs font-bold flex items-center gap-1.5">
+          <!-- Controls panel with Date Range -->
+          <div class="panel-card p-4 rounded-[22px] border border-theme flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <h3 class="font-extrabold text-xs uppercase tracking-wider text-black">Ledger Logs</h3>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-muted">From:</span>
+                <input type="date" id="creditFilterStart" onchange="renderCreditLedger()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
+                <span class="text-[11px] text-muted">To:</span>
+                <input type="date" id="creditFilterEnd" onchange="renderCreditLedger()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
+                <button onclick="clearDateFilter('credit')" class="p-1 text-muted hover:text-black" title="Clear Date Filter"><i data-lucide="x" class="w-4 h-4"></i></button>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+              <button onclick="exportViewToPDF('credit', 'Credit Ledger')" class="px-4 py-2.5 bg-zinc-100 border border-theme hover:bg-zinc-200 text-black rounded-xl text-xs font-bold flex items-center gap-1.5">
                 <i data-lucide="file-text" class="w-4 h-4"></i> Export PDF
               </button>
               <button onclick="openCreditModal()" class="px-4 py-2.5 bg-black text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                Add Manual Log
+                Add Credit Log
               </button>
             </div>
           </div>
 
-          <!-- Side-by-Side Dual Ledgers -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- Receivables Board -->
-            <div class="panel-card border border-theme rounded-[22px] p-5 space-y-4">
-              <div class="flex items-center justify-between border-b border-theme pb-3">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-vibrantGreen"></span>
-                  <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">Owed To Us (Receivables)</h4>
-                </div>
-                <span id="receivablesCountBadge" class="text-xs font-bold text-muted">0 Items</span>
-              </div>
-              <div id="receivablesList" class="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar">
-                <!-- Dynamically populated customer outstanding cards -->
-              </div>
+          <!-- Grouped Person Wise Credits List -->
+          <div class="space-y-4">
+            <h4 class="font-extrabold text-sm uppercase text-black tracking-tight">Active Accounts Grouped by Client / Supplier</h4>
+            <div id="groupedCreditsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Dynamically populated group cards go here -->
             </div>
-
-            <!-- Payables Board -->
-            <div class="panel-card border border-theme rounded-[22px] p-5 space-y-4">
-              <div class="flex items-center justify-between border-b border-theme pb-3">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-vibrantRed"></span>
-                  <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">We Owe (Account Payables)</h4>
-                </div>
-                <span id="payablesCountBadge" class="text-xs font-bold text-muted">0 Items</span>
-              </div>
-              <div id="payablesList" class="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar">
-                <!-- Dynamically populated supplier balance cards -->
-              </div>
-            </div>
-
           </div>
 
         </div>
@@ -531,135 +536,144 @@
       <!-- 4. TAB: PROFIT MARGIN CALCULATOR -->
       <!-- ========================================== -->
       <div id="tab-calculator" class="tab-pane hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          <!-- Sandbox Estimator Tool -->
-          <div class="panel-card border border-theme rounded-[22px] p-5 space-y-4 h-fit">
-            <div class="flex justify-between items-start">
+        <div class="space-y-4">
+          <!-- Date Filter Toolbar for completed checkouts -->
+          <div class="panel-card p-4 rounded-[22px] border border-theme flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] text-muted font-bold">From:</span>
+              <input type="date" id="calcFilterStart" onchange="renderRealizedMarginalStreams()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
+              <span class="text-[11px] text-muted font-bold">To:</span>
+              <input type="date" id="calcFilterEnd" onchange="renderRealizedMarginalStreams()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
+              <button onclick="clearDateFilter('calc')" class="p-1 text-muted hover:text-black" title="Clear Date Filter"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="exportViewToPDF('calculator', 'Profit Streams Report')" class="px-4 py-2 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Export Margin Report
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Sandbox Estimator Tool (On the left) -->
+            <div class="panel-card border border-theme rounded-[22px] p-5 space-y-4 h-fit">
               <div>
                 <h3 class="font-black text-base text-black">Margin Sandbox</h3>
-                <p class="text-xs text-muted">Design projections and mock up retail calculations instantly.</p>
-              </div>
-              <button onclick="exportViewToPDF('tab-calculator', 'Profit Estimations')" class="p-2.5 bg-zinc-100 border border-theme rounded-xl text-black" title="Print Margin Sheets">
-                <i data-lucide="printer" class="w-4 h-4 text-muted"></i>
-              </button>
-            </div>
-
-            <!-- Selector Template Dropdown -->
-            <div class="space-y-1.5">
-              <label class="block text-[10px] text-muted uppercase tracking-wider font-bold">Import Template from Vault</label>
-              <select 
-                id="calcVaultImport" 
-                onchange="handleCalcTemplateImport()"
-                class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-bold text-black focus:outline-none"
-              >
-                <!-- Dynamically filled with products -->
-              </select>
-            </div>
-
-            <hr class="border-theme" />
-
-            <!-- Sandbox Parameters form -->
-            <div class="space-y-3.5">
-              <div>
-                <label class="block text-[10px] text-muted uppercase font-bold">Concept/Product Label</label>
-                <input 
-                  type="text" 
-                  id="calcLabel" 
-                  placeholder="Custom conceptual item" 
-                  oninput="updateSandboxEstimations()"
-                  class="w-full bg-zinc-100 border border-theme rounded-xl px-3 py-2 text-xs font-semibold text-black focus:outline-none"
-                />
+                <p class="text-xs text-muted">Mock up pricing margins instantly.</p>
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
+              <!-- Selector Template Dropdown -->
+              <div class="space-y-1.5">
+                <label class="block text-[10px] text-muted uppercase tracking-wider font-bold">Import Template from Stock</label>
+                <select 
+                  id="calcVaultImport" 
+                  onchange="handleCalcTemplateImport()"
+                  class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-bold text-black focus:outline-none"
+                >
+                  <!-- Dynamically filled with products -->
+                </select>
+              </div>
+
+              <hr class="border-theme" />
+
+              <!-- Sandbox Parameters form -->
+              <div class="space-y-3.5">
                 <div>
-                  <label class="block text-[10px] text-muted uppercase font-bold">Purchase Cost</label>
+                  <label class="block text-[10px] text-muted uppercase font-bold">Product Label</label>
                   <input 
-                    type="number" 
-                    id="calcCost" 
-                    placeholder="0.00" 
+                    type="text" 
+                    id="calcLabel" 
+                    placeholder="Custom Item Title" 
                     oninput="updateSandboxEstimations()"
                     class="w-full bg-zinc-100 border border-theme rounded-xl px-3 py-2 text-xs font-semibold text-black focus:outline-none"
                   />
                 </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] text-muted uppercase font-bold">Purchase Cost</label>
+                    <input 
+                      type="number" 
+                      id="calcCost" 
+                      placeholder="0.00" 
+                      oninput="updateSandboxEstimations()"
+                      class="w-full bg-zinc-100 border border-theme rounded-xl px-3 py-2 text-xs font-semibold text-black focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] text-muted uppercase font-bold">Selling Price</label>
+                    <input 
+                      type="number" 
+                      id="calcSell" 
+                      placeholder="0.00" 
+                      oninput="updateSandboxEstimations()"
+                      class="w-full bg-zinc-100 border border-theme rounded-xl px-3 py-2 text-xs font-semibold text-black focus:outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label class="block text-[10px] text-muted uppercase font-bold">Selling Price</label>
+                  <label class="block text-[10px] text-muted uppercase font-bold">Quantity</label>
                   <input 
                     type="number" 
-                    id="calcSell" 
-                    placeholder="0.00" 
+                    id="calcQty" 
+                    value="1" 
                     oninput="updateSandboxEstimations()"
                     class="w-full bg-zinc-100 border border-theme rounded-xl px-3 py-2 text-xs font-semibold text-black focus:outline-none"
                   />
                 </div>
               </div>
 
+              <!-- Calculated Breakdown Showcase -->
+              <div class="bg-zinc-100 rounded-xl p-4 border border-theme space-y-3">
+                <span class="text-[9px] text-muted uppercase font-black tracking-widest block">Sandbox Calculations</span>
+                
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span class="text-muted text-[10px]">Total Outflow Cost:</span>
+                    <p id="sandboxTotalCostText" class="font-bold font-mono text-black">0.00</p>
+                  </div>
+                  <div>
+                    <span class="text-muted text-[10px]">Total Gross Cash:</span>
+                    <p id="sandboxTotalRevenueText" class="font-bold font-mono text-black">0.00</p>
+                  </div>
+                </div>
+
+                <div class="border-t border-theme pt-3 flex justify-between items-center">
+                  <div>
+                    <span class="text-[10px] text-muted font-bold block">Gross Profit</span>
+                    <p id="sandboxProfitText" class="text-lg font-black font-mono">0.00</p>
+                  </div>
+                  <span id="sandboxMarginBadge" class="px-2 py-1 bg-vibrantGreen/10 text-vibrantGreen border border-vibrantGreen/15 rounded-lg text-[10px] font-extrabold font-mono">
+                    0.0% Margin
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Realized Profits Checkout Stream Logs (Right side) -->
+            <div class="lg:col-span-2 panel-card border border-theme rounded-[22px] p-5 space-y-4">
               <div>
-                <label class="block text-[10px] text-muted uppercase font-bold">Calculated Sales Qty</label>
-                <input 
-                  type="number" 
-                  id="calcQty" 
-                  value="1" 
-                  oninput="updateSandboxEstimations()"
-                  class="w-full bg-zinc-100 border border-theme rounded-xl px-3 py-2 text-xs font-semibold text-black focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <!-- Calculated Breakdown Showcase -->
-            <div class="bg-zinc-100 rounded-xl p-4 border border-theme space-y-3">
-              <span class="text-[9px] text-muted uppercase font-black tracking-widest block">Sandbox Calculations</span>
-              
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span class="text-muted text-[10px]">Total Outflow Cost:</span>
-                  <p id="sandboxTotalCostText" class="font-bold font-mono text-black">0.00</p>
-                </div>
-                <div>
-                  <span class="text-muted text-[10px]">Total Gross Cash:</span>
-                  <p id="sandboxTotalRevenueText" class="font-bold font-mono text-black">0.00</p>
-                </div>
+                <h3 class="font-black text-base text-black">Completed Margin Streams</h3>
+                <p class="text-xs text-muted">Real-time profit tracking from cashier checkouts.</p>
               </div>
 
-              <div class="border-t border-theme pt-3 flex justify-between items-center">
-                <div>
-                  <span class="text-[10px] text-muted font-bold block">Gross Estimated Profit</span>
-                  <p id="sandboxProfitText" class="text-lg font-black font-mono">0.00</p>
-                </div>
-                <span id="sandboxMarginBadge" class="px-2 py-1 bg-vibrantGreen/10 text-vibrantGreen border border-vibrantGreen/15 rounded-lg text-[10px] font-extrabold font-mono">
-                  0.0% Margin
-                </span>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[500px]">
+                  <thead>
+                    <tr class="bg-zinc-100 border-b border-theme">
+                      <th class="p-3 text-[10px] font-bold text-muted uppercase">Timestamp</th>
+                      <th class="p-3 text-[10px] font-bold text-muted uppercase">Product Info</th>
+                      <th class="p-3 text-[10px] font-bold text-muted uppercase text-center">Qty Sold</th>
+                      <th class="p-3 text-[10px] font-bold text-muted uppercase">Margin</th>
+                      <th class="p-3 text-[10px] font-bold text-muted uppercase text-right">Realized Net Profit</th>
+                    </tr>
+                  </thead>
+                  <tbody id="realizedProfitLogs" class="divide-y divide-theme text-xs text-black">
+                    <!-- Dynamic checkouts metrics stream -->
+                  </tbody>
+                </table>
               </div>
-            </div>
-
-          </div>
-
-          <!-- Realized Profits Checkout Stream Logs -->
-          <div class="lg:col-span-2 panel-card border border-theme rounded-[22px] p-5 space-y-4">
-            <div>
-              <h3 class="font-black text-base text-black">Completed Checkout Margin Streams</h3>
-              <p class="text-xs text-muted">Real-time analytical reporting displaying accurate margin generation.</p>
-            </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse min-w-[500px]">
-                <thead>
-                  <tr class="bg-zinc-100 border-b border-theme">
-                    <th class="p-3 text-[10px] font-bold text-muted uppercase">Timestamp</th>
-                    <th class="p-3 text-[10px] font-bold text-muted uppercase">Product Info</th>
-                    <th class="p-3 text-[10px] font-bold text-muted uppercase text-center">Qty Sold</th>
-                    <th class="p-3 text-[10px] font-bold text-muted uppercase">Margin</th>
-                    <th class="p-3 text-[10px] font-bold text-muted uppercase text-right">Realized Net Profit</th>
-                  </tr>
-                </thead>
-                <tbody id="realizedProfitLogs" class="divide-y divide-theme text-xs text-black">
-                  <!-- Dynamic checkouts metrics stream -->
-                </tbody>
-              </table>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -671,12 +685,11 @@
           
           <!-- Unified KPI dashboard numbers -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-black">
-            
             <div class="panel-card border border-theme rounded-[22px] p-5 flex flex-col justify-between">
               <span class="text-[10px] text-muted uppercase tracking-wider font-extrabold">Gross Sales Revenue</span>
               <div class="mt-4">
                 <p id="kpiGrossRevenue" class="text-2xl font-black font-mono text-black">0.00</p>
-                <p class="text-[9px] text-muted mt-1">Sum value of checkout tickets</p>
+                <p class="text-[9px] text-muted mt-1">Total checkout value</p>
               </div>
             </div>
 
@@ -692,18 +705,32 @@
               <span class="text-[10px] text-muted uppercase tracking-wider font-extrabold">Average Sales Margin</span>
               <div class="mt-4">
                 <p id="kpiAverageMargin" class="text-2xl font-black text-current font-mono font-bold text-black">0.0%</p>
-                <p class="text-[9px] text-muted mt-1">Overall profitability indicator</p>
+                <p class="text-[9px] text-muted mt-1">Overall profitability percentage</p>
               </div>
             </div>
 
             <div class="panel-card border border-theme rounded-[22px] p-5 flex flex-col justify-between">
-              <span class="text-[10px] text-muted uppercase tracking-wider font-extrabold">Stock Health Warnings</span>
+              <span class="text-[10px] text-muted uppercase tracking-wider font-extrabold">Low Stock Warnings</span>
               <div class="mt-4">
                 <p id="kpiLowStockCount" class="text-2xl font-black text-vibrantRed font-mono">0</p>
-                <p class="text-[9px] text-muted mt-1">Items with low quantities</p>
+                <p class="text-[9px] text-muted mt-1">Items running out soon</p>
               </div>
             </div>
+          </div>
 
+          <!-- Filter / Date settings -->
+          <div class="panel-card p-4 rounded-[22px] border border-theme flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] text-muted font-bold">From:</span>
+              <input type="date" id="reportsFilterStart" onchange="renderAnalyticsReports()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
+              <span class="text-[11px] text-muted font-bold">To:</span>
+              <input type="date" id="reportsFilterEnd" onchange="renderAnalyticsReports()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
+              <button onclick="clearDateFilter('reports')" class="p-1 text-muted hover:text-black" title="Clear Date Filter"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="exportViewToPDF('reports', 'Business Reports')" class="px-5 py-2.5 bg-black text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center gap-1.5 hover:scale-105 transition-all">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              Download PDF Report
+            </button>
           </div>
 
           <!-- Dynamic visual charting streams -->
@@ -712,8 +739,8 @@
             <!-- Category contribution charting breakdown -->
             <div class="panel-card border border-theme rounded-[22px] p-5 space-y-4">
               <div>
-                <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">Gross Category Breakdown</h4>
-                <p class="text-[11px] text-muted">Proportional contributions of categories to overall revenue.</p>
+                <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">Sales by Category</h4>
+                <p class="text-[11px] text-muted">Category share in total revenue.</p>
               </div>
               <div id="categoryChartList" class="space-y-4">
                 <!-- Dynamically constructed categories bar charts -->
@@ -723,8 +750,8 @@
             <!-- Liabilities & Debt Risk analysis gauge -->
             <div class="panel-card border border-theme rounded-[22px] p-5 space-y-4">
               <div>
-                <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">Credit Allocation Balance Health</h4>
-                <p class="text-[11px] text-muted">Comparing risk index between outstanding debt liabilities and collectibles.</p>
+                <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">Credit Balance health</h4>
+                <p class="text-[11px] text-muted">Outstanding liabilities vs collectibles comparison.</p>
               </div>
 
               <!-- Graphic comparative progress scale -->
@@ -737,30 +764,19 @@
                   <div class="bg-vibrantGreen/10 border border-vibrantGreen/20 p-3.5 rounded-xl">
                     <span class="text-[9px] text-vibrantGreen uppercase font-black block">Receivables Allocation</span>
                     <p id="riskCardReceivables" class="text-base font-black font-mono text-black">0.00</p>
-                    <span class="text-[9px] text-muted">Customer outstanding tab asset liquidity</span>
+                    <span class="text-[9px] text-muted">Collectibles outstanding total</span>
                   </div>
 
                   <div class="bg-vibrantRed/10 border border-vibrantRed/20 p-3.5 rounded-xl">
                     <span class="text-[9px] text-vibrantRed uppercase font-black block">Payables Allocation</span>
                     <p id="riskCardPayables" class="text-base font-black font-mono text-black">0.00</p>
-                    <span class="text-[9px] text-muted">Outstanding operational liabilities owed</span>
+                    <span class="text-[9px] text-muted">Liabilities we owe total</span>
                   </div>
                 </div>
               </div>
 
             </div>
 
-          </div>
-
-          <!-- Direct Reports PDF & Printable Footer link -->
-          <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-zinc-100 border border-theme rounded-[22px] gap-4">
-            <span class="text-xs text-muted">
-              Welfare Analysis & Financial accounting statement.
-            </span>
-            <button onclick="exportViewToPDF('tab-reports', 'Financial Performance Report')" class="px-5 py-2.5 bg-black text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center gap-1.5 hover:scale-105 transition-all">
-              <i data-lucide="printer" class="w-4 h-4"></i>
-              Download PDF Report
-            </button>
           </div>
 
         </div>
@@ -773,11 +789,55 @@
   <!-- MODALS SYSTEM -->
   <!-- ========================================== -->
   
+  <!-- A1. CUSTOM CONFIRMATION MODAL -->
+  <div id="modalConfirm" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4 hidden">
+    <div class="panel-card border border-theme rounded-[24px] p-6 w-full max-w-sm shadow-2xl space-y-4">
+      <div class="flex items-center gap-2 text-vibrantRed" id="confirmIconContainer">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        <h4 class="font-extrabold text-sm tracking-wide uppercase text-black" id="confirmTitle">System Action</h4>
+      </div>
+      <p id="confirmMessage" class="text-xs font-semibold text-black leading-relaxed"></p>
+      <div class="flex items-center gap-2 pt-2 justify-end">
+        <button id="confirmCancelBtn" class="px-4 py-2 bg-zinc-200 text-black text-xs font-bold rounded-xl hover:bg-zinc-300">Cancel</button>
+        <button id="confirmProceedBtn" class="px-4 py-2 bg-black text-white text-xs font-bold rounded-xl hover:bg-zinc-800">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- A2. CUSTOM NOTIFICATION DIALOG -->
+  <div id="modalAlert" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4 hidden">
+    <div class="panel-card border border-theme rounded-[24px] p-6 w-full max-w-sm shadow-2xl space-y-4">
+      <div class="flex items-center gap-2 text-black">
+        <i data-lucide="info" class="w-5 h-5 text-muted"></i>
+        <h4 class="font-extrabold text-sm tracking-wide uppercase" id="alertTitle">Notification</h4>
+      </div>
+      <p id="alertMessage" class="text-xs font-semibold text-black leading-relaxed"></p>
+      <div class="flex items-center pt-2 justify-end">
+        <button onclick="closeCustomAlert()" class="px-5 py-2 bg-black text-white text-xs font-bold rounded-xl hover:bg-zinc-800">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- A3. LIVE BARCODE CAMERA SCAN MODAL -->
+  <div id="modalBarcodeScan" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+    <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-black tracking-wide uppercase text-black">Live Camera Barcode Scanner</h3>
+        <button onclick="stopBarcodeScan()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <!-- HTML5 QR Scanner viewport placeholder -->
+      <div id="cameraScanViewport" class="w-full bg-zinc-100 rounded-2xl overflow-hidden border border-theme" style="min-height: 250px;"></div>
+      <p class="text-[10px] text-muted text-center leading-relaxed">Place product barcode inside camera frames to scan automatically.</p>
+    </div>
+  </div>
+
   <!-- 1. MODAL: ADD BUSINESS UNIT -->
   <div id="modalBusiness" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
     <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-5">
       <div class="flex justify-between items-center">
-        <h3 class="text-base font-black tracking-wide uppercase text-black">Setup Business Hub</h3>
+        <h3 class="text-base font-black tracking-wide uppercase text-black">Setup Shop Store</h3>
         <button onclick="closeBusinessModal()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
           <i data-lucide="x" class="w-5 h-5 text-muted"></i>
         </button>
@@ -785,17 +845,17 @@
 
       <div class="space-y-4">
         <div>
-          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Company/Shop Title</label>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Shop / Store Name</label>
           <input 
             type="text" 
             id="modalBusinessName"
-            placeholder="Business Name Here" 
+            placeholder="e.g. Asim Retail Store" 
             class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-current text-black"
           />
         </div>
 
         <div>
-          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Trade Industry Style</label>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Business Type</label>
           <select 
             id="modalBusinessType"
             class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-bold text-black focus:outline-none"
@@ -809,7 +869,7 @@
         </div>
 
         <button onclick="saveNewBusiness()" class="w-full py-3.5 bg-black text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg">
-          Deploy Hub Instance
+          Add Branch
         </button>
       </div>
     </div>
@@ -819,7 +879,7 @@
   <div id="modalInventory" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
     <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-5">
       <div class="flex justify-between items-center">
-        <h3 id="modalInvTitle" class="text-base font-black tracking-wide uppercase text-black">Initialize Product</h3>
+        <h3 id="modalInvTitle" class="text-base font-black tracking-wide uppercase text-black">New Product</h3>
         <button onclick="closeInventoryModal()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
           <i data-lucide="x" class="w-5 h-5 text-muted"></i>
         </button>
@@ -827,7 +887,7 @@
 
       <div class="space-y-4">
         <div>
-          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Item Name/Description</label>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Item Name</label>
           <input 
             type="text" 
             id="modalInvName"
@@ -838,6 +898,20 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
+            <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Barcode / SKU</label>
+            <div class="flex gap-1.5">
+              <input 
+                type="text" 
+                id="modalInvBarcode"
+                placeholder="Scan or Input Barcode" 
+                class="w-full bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-semibold text-black focus:outline-none"
+              />
+              <button onclick="startBarcodeScan('modalInvBarcode')" class="px-2.5 py-1 bg-zinc-200 rounded-xl hover:bg-zinc-350 text-black" title="Camera Barcode Scan">
+                <i data-lucide="scan" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div>
             <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Category</label>
             <select 
               id="modalInvCategory"
@@ -846,17 +920,11 @@
               <!-- Populated via Categories dataset -->
             </select>
           </div>
-          <div>
-            <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">New Category</label>
-            <button onclick="triggerInlineCategoryCreation()" class="w-full py-2.5 bg-zinc-200 border border-theme text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 text-black">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Create
-            </button>
-          </div>
         </div>
 
         <div class="grid grid-cols-3 gap-3">
           <div class="col-span-1">
-            <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Warehouse Qty</label>
+            <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">In Stock Qty</label>
             <input 
               type="number" 
               id="modalInvQty"
@@ -886,12 +954,14 @@
           </div>
         </div>
 
-        <p class="text-[10px] text-muted bg-zinc-100 p-3 rounded-xl border border-theme">
-          <strong>Auto Stamps Warning:</strong> Auto date and time stamp logs dynamically as you finalize edits.
-        </p>
+        <div class="flex justify-end gap-1.5">
+          <button onclick="triggerInlineCategoryCreation()" class="py-2 px-3 bg-zinc-200 border border-theme text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 text-black">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add New Category
+          </button>
+        </div>
 
         <button onclick="saveInventoryItem()" class="w-full py-3.5 bg-black text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg">
-          Commit To Vault
+          Commit to Stock
         </button>
       </div>
     </div>
@@ -938,7 +1008,7 @@
   <div id="modalCredit" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
     <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-5">
       <div class="flex justify-between items-center">
-        <h3 class="text-base font-black tracking-wide uppercase text-black">Register Outstanding Credit</h3>
+        <h3 class="text-base font-black tracking-wide uppercase text-black">Register Credit Log</h3>
         <button onclick="closeCreditModal()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
           <i data-lucide="x" class="w-5 h-5 text-muted"></i>
         </button>
@@ -946,10 +1016,11 @@
 
       <div class="space-y-4">
         <div>
-          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Counterparty/Contact Name</label>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Client / Supplier Name</label>
           <input 
             type="text" 
             id="modalCreditName"
+            list="borrowerNames"
             placeholder="e.g. Apex Wholesales Corp" 
             class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-semibold text-black focus:outline-none focus:ring-1 focus:ring-current"
           />
@@ -967,7 +1038,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Debt Obligation Value</label>
+            <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Debt Value</label>
             <input 
               type="number" 
               step="0.01" 
@@ -979,7 +1050,16 @@
         </div>
 
         <div>
-          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Context Description Notes</label>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Optional Due Date</label>
+          <input 
+            type="date" 
+            id="modalCreditDueDate"
+            class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-semibold text-black focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Notes Description</label>
           <textarea 
             id="modalCreditDesc"
             placeholder="Add dynamic contextual explanation regarding the credit agreement details." 
@@ -995,6 +1075,9 @@
     </div>
   </div>
 
+  <!-- Shared Global Borrower/Debtor Names Autocomplete Cache -->
+  <datalist id="borrowerNames"></datalist>
+
   <!-- Notification Banner system -->
   <div id="customToast" class="fixed bottom-6 right-6 bg-black text-white border border-theme px-5 py-3.5 rounded-[18px] shadow-2xl z-50 flex items-center gap-3 translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
     <div class="w-2.5 h-2.5 rounded-full bg-vibrantGreen animate-ping"></div>
@@ -1008,22 +1091,13 @@
   <!-- MAIN JS APPLICATION ARCHITECTURE -->
   <!-- ========================================== -->
   <script>
-    
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-// Path adjust karein
-navigator.serviceWorker.register('/onyxprototype/sw.js')
-        .then(reg => console.log('SW Registered'))
-        .catch(err => console.log('SW Failed', err));
-    });
-  }
     // --- DATABASE STATE SCHEME ---
     let state = {
       businesses: [],
       currentBusinessId: '',
       categories: [], // Shared categories catalog
-      inventory: [],  // [{id, businessId, name, category, costPrice, sellPrice, quantity, dateAdded, dateUpdated}]
-      credits: [],    // [{id, businessId, name, type, amount, desc, date, status}]
+      inventory: [],  // [{id, businessId, name, barcode, category, costPrice, sellPrice, quantity, dateAdded, dateUpdated}]
+      credits: [],    // [{id, businessId, name, type, amount, desc, date, dueDate, status}]
       sales: []       // [{id, businessId, itemName, category, costPrice, sellPrice, quantity, totalProfit, date}]
     };
 
@@ -1031,16 +1105,18 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
     let currentEditingItem = null;
     let paymentMethod = 'Cash';
     let cart = [];
+    let html5QrcodeScanner = null;
+    let barcodeTargetInputId = null;
+
+    // Custom Modal Queue System Callback References
+    let onConfirmProceedCallback = null;
 
     // --- SETUP & BOOTSTRAP SYSTEM ---
     window.onload = function() {
       loadStateFromStorage();
-      
-      // Setup dynamic UI triggers
       setupClockTrigger();
       setupSidebarMenuTriggers();
-      
-      // Auto-initialize icons
+      setupKeyboardBarcodeScanner();
       lucide.createIcons();
 
       if (state.businesses.length === 0) {
@@ -1049,6 +1125,63 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         renderGlobalContext();
       }
     };
+
+    // --- KEYBOARD HARDWARE BARCODE SCANNER DETECTOR ---
+    // Hardware scanners typically type characters fast and end with an 'Enter' keypress
+    let barcodeBuffer = '';
+    let lastKeyTime = Date.now();
+
+    function setupKeyboardBarcodeScanner() {
+      document.addEventListener('keydown', function(e) {
+        // Only trigger barcode capture when not focused on an input to avoid interrupting natural user typing
+        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+          // If the target is the Cashier Search barcode scanner trigger directly
+          if (document.activeElement.id === 'registerSearch') {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const scannedText = document.activeElement.value.trim();
+              if (scannedText) {
+                processBarcodeAction(scannedText);
+                document.activeElement.value = '';
+              }
+            }
+          }
+          return;
+        }
+
+        const currentTime = Date.now();
+        if (currentTime - lastKeyTime > 150) {
+          barcodeBuffer = '';
+        }
+        lastKeyTime = currentTime;
+
+        if (e.key === 'Enter') {
+          if (barcodeBuffer.length > 2) {
+            e.preventDefault();
+            processBarcodeAction(barcodeBuffer);
+            barcodeBuffer = '';
+          }
+        } else if (e.key.length === 1) {
+          barcodeBuffer += e.key;
+        }
+      });
+    }
+
+    // Process a successfully captured barcode directly
+    function processBarcodeAction(barcode) {
+      barcode = barcode.trim();
+      if (!barcode) return;
+
+      // Find product with matching barcode
+      const product = state.inventory.find(i => i.barcode === barcode && i.businessId === state.currentBusinessId);
+      
+      if (product) {
+        addProductToCart(product);
+        showNotification(`Scanned "${product.name}" successfully!`);
+      } else {
+        showCustomAlert(`Product with barcode "${barcode}" not found in stock catalog.`, "Barcode Not Found");
+      }
+    }
 
     // --- SYSTEM TIME UPDATER ---
     function setupClockTrigger() {
@@ -1073,6 +1206,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
     // --- LOCAL STORAGE CORE CONTROLLER ---
     function saveStateToStorage() {
       localStorage.setItem('onyxpos_database_v3_premium', JSON.stringify(state));
+      updateBorrowersNamesDatalist();
     }
 
     // --- LOAD FROM STORAGE ---
@@ -1085,11 +1219,65 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
           console.error("Critical database corruption on load.", e);
         }
       }
+      updateBorrowersNamesDatalist();
     }
 
-    // --- DATA WIPE CONTROLLER ---
-    function hardResetData() {
-      if (confirm("Are you absolutely sure you want to completely wipe the entire POS database? This action is permanent.")) {
+    // --- MANAGE UNIQUE CLIENT NAME CONSISTENCY ---
+    function updateBorrowersNamesDatalist() {
+      const datalist = document.getElementById('borrowerNames');
+      if (!datalist) return;
+      datalist.innerHTML = '';
+
+      const namesSet = new Set();
+      state.credits.forEach(c => {
+        if (c.name && c.name.trim() !== '') {
+          namesSet.add(c.name.trim());
+        }
+      });
+
+      namesSet.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        datalist.appendChild(option);
+      });
+    }
+
+    // --- CUSTOM MODALS FOR CSP COMPLIANCE ---
+    function showCustomAlert(msg, title = "System Notification") {
+      document.getElementById('alertTitle').innerText = title;
+      document.getElementById('alertMessage').innerText = msg;
+      document.getElementById('modalAlert').classList.remove('hidden');
+    }
+
+    function closeCustomAlert() {
+      document.getElementById('modalAlert').classList.add('hidden');
+    }
+
+    function showCustomConfirm(msg, onProceed, title = "Verification Required") {
+      document.getElementById('confirmTitle').innerText = title;
+      document.getElementById('confirmMessage').innerText = msg;
+      onConfirmProceedCallback = onProceed;
+      
+      const confirmModal = document.getElementById('modalConfirm');
+      confirmModal.classList.remove('hidden');
+
+      document.getElementById('confirmCancelBtn').onclick = function() {
+        confirmModal.classList.add('hidden');
+        onConfirmProceedCallback = null;
+      };
+      
+      document.getElementById('confirmProceedBtn').onclick = function() {
+        confirmModal.classList.add('hidden');
+        if (onConfirmProceedCallback) {
+          onConfirmProceedCallback();
+        }
+        onConfirmProceedCallback = null;
+      };
+    }
+
+    // --- TRIGGER WIPE DATABASE ---
+    function triggerHardResetConfirmation() {
+      showCustomConfirm("Are you absolutely sure you want to completely wipe the entire POS database? This action is permanent.", function() {
         localStorage.removeItem('onyxpos_database_v3_premium');
         state = {
           businesses: [],
@@ -1102,7 +1290,58 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         cart = [];
         saveStateToStorage();
         window.location.reload();
+      }, "Hard Database Reset");
+    }
+
+    // --- CAMERA BARCODE SCANNER CORE ---
+    function startBarcodeScan(inputId) {
+      barcodeTargetInputId = inputId;
+      document.getElementById('modalBarcodeScan').classList.remove('hidden');
+      
+      // Delay scanner start slightly to avoid layout flicker
+      setTimeout(() => {
+        html5QrcodeScanner = new Html5Qrcode("cameraScanViewport");
+        const config = { fps: 15, qrbox: { width: 250, height: 150 } };
+        
+        html5QrcodeScanner.start(
+          { facingMode: "environment" },
+          config,
+          (decodedText) => {
+            // Scanner successfully scanned a barcode
+            document.getElementById(barcodeTargetInputId).value = decodedText;
+            stopBarcodeScan();
+            
+            // If scanning on Cashier tab directly, immediately process to ticket
+            if (barcodeTargetInputId === 'registerSearch') {
+              processBarcodeAction(decodedText);
+            }
+          },
+          () => {
+            // Quiet fail handler for constant scans
+          }
+        ).catch((err) => {
+          showCustomAlert("Could not start camera. Please verify camera permissions are granted.", "Scanner Error");
+          stopBarcodeScan();
+        });
+      }, 300);
+    }
+
+    function stopBarcodeScan() {
+      document.getElementById('modalBarcodeScan').classList.add('hidden');
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          html5QrcodeScanner = null;
+        }).catch(() => {
+          html5QrcodeScanner = null;
+        });
       }
+    }
+
+    // --- CLEAR FILTERS ---
+    function clearDateFilter(tab) {
+      document.getElementById(`${tab}FilterStart`).value = '';
+      document.getElementById(`${tab}FilterEnd`).value = '';
+      renderActiveTabData();
     }
 
     // --- CUSTOM TOAST MESSAGE SYSTEM ---
@@ -1158,20 +1397,17 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         activeNav.className = "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all bg-black text-white";
       }
 
-      // Sync active view Title text
       const titlesMap = {
-        'register': 'POS Cashier',
-        'inventory': 'Stock Vault Catalog',
-        'credit': 'Unified Liability Ledger',
-        'calculator': 'Sandbox Margin tool',
-        'reports': 'Business Reports & Analytics'
+        'register': 'Cashier Checkout',
+        'inventory': 'Stock Manager',
+        'credit': 'Customer & Credit Ledger',
+        'calculator': 'Profit Margin Tool',
+        'reports': 'Business Reports'
       };
       document.getElementById('activeTabTitle').innerText = titlesMap[targetTab] || 'Cashier';
 
-      // Re-trigger visual component rendering
       renderActiveTabData();
 
-      // Auto close responsive drawer if switching tab on mobile
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('sidebarOverlay');
       sidebar.classList.add('-translate-x-full');
@@ -1207,10 +1443,9 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         bizSelect.appendChild(opt);
       });
 
-      // Bind dynamic selector update listener
       bizSelect.onchange = function(e) {
         state.currentBusinessId = e.target.value;
-        cart = []; // Reset shopping cart upon company hop
+        cart = []; 
         saveStateToStorage();
         renderGlobalContext();
       };
@@ -1223,10 +1458,9 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       if (currentBiz) {
         document.getElementById('headerBusinessName').innerText = currentBiz.name;
       } else {
-        document.getElementById('headerBusinessName').innerText = 'No Business Configured';
+        document.getElementById('headerBusinessName').innerText = 'No Store Configured';
       }
 
-      // Sync shared global dropdowns
       rebuildCategoryDropdowns();
       renderActiveTabData();
     }
@@ -1236,7 +1470,6 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       const invCat = document.getElementById('inventoryCategoryFilter');
       const modalInvCat = document.getElementById('modalInvCategory');
 
-      // Preserve existing selected value if any
       const activeRegVal = registerCat ? registerCat.value : 'All';
       const activeInvVal = invCat ? invCat.value : 'All';
 
@@ -1272,7 +1505,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
     function closeBusinessModal() {
       if (state.businesses.length === 0) {
-        alert("Please set up at least one business branch to use OnyxPOS.");
+        showCustomAlert("Please setup at least one branch to use OnyxPOS.", "No Store Installed");
         return;
       }
       document.getElementById('modalBusiness').classList.add('hidden');
@@ -1283,7 +1516,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       const typeInp = document.getElementById('modalBusinessType');
 
       if (!nameInp.value.trim()) {
-        alert("Please provide a valid company/shop name.");
+        showCustomAlert("Please provide a valid Store Name.", "Incomplete Fields");
         return;
       }
 
@@ -1297,12 +1530,10 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       state.currentBusinessId = newBiz.id;
       
       saveStateToStorage();
-      
-      // Clean form inputs
       nameInp.value = '';
       
       document.getElementById('modalBusiness').classList.add('hidden');
-      showNotification("Business registered and activated successfully!");
+      showNotification("Shop Registered Successfully!");
       renderGlobalContext();
     }
 
@@ -1315,8 +1546,14 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       renderCategoriesList();
     }
 
+    let defaultCategoryCloseHook = null;
+
     function closeCategoryModal() {
       document.getElementById('modalCategory').classList.add('hidden');
+      if (defaultCategoryCloseHook) {
+        defaultCategoryCloseHook();
+        defaultCategoryCloseHook = null;
+      }
     }
 
     function renderCategoriesList() {
@@ -1324,7 +1561,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       listContainer.innerHTML = '';
 
       if (state.categories.length === 0) {
-        listContainer.innerHTML = '<p class="text-[10px] text-muted py-3 text-center">No categories registered yet.</p>';
+        listContainer.innerHTML = '<p class="text-[10px] text-muted py-3 text-center">No Categories Active.</p>';
         return;
       }
 
@@ -1333,7 +1570,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         div.className = "flex justify-between items-center bg-zinc-100 px-3 py-2 rounded-lg border border-theme";
         div.innerHTML = `
           <span class="text-xs font-bold text-black">${cat}</span>
-          <button onclick="deleteCategory('${cat}')" class="text-muted hover:text-vibrantRed transition-colors">
+          <button onclick="triggerCategoryDeletion('${cat}')" class="text-muted hover:text-vibrantRed transition-colors">
             <i data-lucide="trash" class="w-4 h-4"></i>
           </button>
         `;
@@ -1347,11 +1584,11 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       const val = inp.value.trim();
 
       if (!val) {
-        alert("Category name cannot be empty.");
+        showCustomAlert("Category name cannot be empty.", "Validation Failed");
         return;
       }
       if (state.categories.includes(val)) {
-        alert("This category already exists inside the database.");
+        showCustomAlert("This category already exists.", "Duplicate Entry");
         return;
       }
 
@@ -1361,30 +1598,25 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       
       rebuildCategoryDropdowns();
       renderCategoriesList();
-      showNotification(`Category "${val}" registered.`);
+      showNotification(`Category "${val}" Registered.`);
     }
 
-    function deleteCategory(cat) {
-      if (confirm(`Are you sure you want to delete category "${cat}"? Products under this category will need update.`)) {
+    function triggerCategoryDeletion(cat) {
+      showCustomConfirm(`Are you sure you want to delete category "${cat}"? Products under this category will need manual updates.`, function() {
         state.categories = state.categories.filter(c => c !== cat);
         saveStateToStorage();
         rebuildCategoryDropdowns();
         renderCategoriesList();
-      }
+        showNotification(`Category "${cat}" Deleted.`);
+      }, "Remove Category");
     }
 
     function triggerInlineCategoryCreation() {
       document.getElementById('modalInventory').classList.add('hidden');
       openCategoryModal();
-      
-      // Hook closing handler to go back safely
-      const origClose = closeCategoryModal;
-      closeCategoryModal = function() {
-        document.getElementById('modalCategory').classList.add('hidden');
+      defaultCategoryCloseHook = function() {
         document.getElementById('modalInventory').classList.remove('hidden');
         rebuildCategoryDropdowns();
-        // Reset hook
-        closeCategoryModal = origClose;
       };
     }
 
@@ -1394,7 +1626,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
     // ==========================================
     function openInventoryModal(itemToEdit = false) {
       if (state.categories.length === 0) {
-        alert("No categories registered! Please setup at least one category to construct inventory products.");
+        showCustomAlert("No categories configured yet! Setup at least one category to add product items.", "Setup Category First");
         openCategoryModal();
         return;
       }
@@ -1404,6 +1636,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
       const titleEl = document.getElementById('modalInvTitle');
       const nameInp = document.getElementById('modalInvName');
+      const barcodeInp = document.getElementById('modalInvBarcode');
       const catInp = document.getElementById('modalInvCategory');
       const qtyInp = document.getElementById('modalInvQty');
       const costInp = document.getElementById('modalInvCost');
@@ -1413,6 +1646,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         currentEditingItem = itemToEdit;
         titleEl.innerText = "Edit Stock Product";
         nameInp.value = itemToEdit.name;
+        barcodeInp.value = itemToEdit.barcode || '';
         catInp.value = itemToEdit.category;
         qtyInp.value = itemToEdit.quantity;
         costInp.value = itemToEdit.costPrice;
@@ -1421,6 +1655,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         currentEditingItem = null;
         titleEl.innerText = "Add New Product";
         nameInp.value = '';
+        barcodeInp.value = '';
         qtyInp.value = '';
         costInp.value = '';
         sellInp.value = '';
@@ -1433,29 +1668,39 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
     function saveInventoryItem() {
       const name = document.getElementById('modalInvName').value.trim();
+      const barcode = document.getElementById('modalInvBarcode').value.trim();
       const category = document.getElementById('modalInvCategory').value;
       const qty = parseInt(document.getElementById('modalInvQty').value) || 0;
       const cost = parseFloat(document.getElementById('modalInvCost').value) || 0;
       const sell = parseFloat(document.getElementById('modalInvSell').value) || 0;
 
       if (!name) {
-        alert("Please provide a product title.");
+        showCustomAlert("Please provide a product title.", "Validation Warning");
         return;
       }
       if (cost < 0 || sell < 0 || qty < 0) {
-        alert("Prices and stock numbers must be absolute positive figures.");
+        showCustomAlert("Prices and stock numbers must be absolute positive figures.", "Validation Warning");
         return;
+      }
+
+      // Check barcode conflict within this business branch
+      if (barcode) {
+        const conflict = state.inventory.find(i => i.barcode === barcode && i.businessId === state.currentBusinessId && (!currentEditingItem || i.id !== currentEditingItem.id));
+        if (conflict) {
+          showCustomAlert(`Barcode "${barcode}" is already assigned to "${conflict.name}". Please use a unique barcode.`, "Barcode Collision");
+          return;
+        }
       }
 
       const stamps = getSystemTimestamp();
 
       if (currentEditingItem) {
-        // Edit flow
         state.inventory = state.inventory.map(item => {
           if (item.id === currentEditingItem.id) {
             return {
               ...item,
               name,
+              barcode,
               category,
               quantity: qty,
               costPrice: cost,
@@ -1467,11 +1712,11 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         });
         showNotification("Product updated successfully.");
       } else {
-        // Create flow
         const newItem = {
           id: 'prod_' + Date.now(),
           businessId: state.currentBusinessId,
           name,
+          barcode,
           category,
           quantity: qty,
           costPrice: cost,
@@ -1488,12 +1733,13 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       renderActiveTabData();
     }
 
-    function deleteInventoryItem(id) {
-      if (confirm("Are you sure you want to remove this catalog product entirely?")) {
+    function triggerInventoryDeletion(id) {
+      showCustomConfirm("Are you sure you want to remove this product entirely from stock?", function() {
         state.inventory = state.inventory.filter(i => i.id !== id);
         saveStateToStorage();
         renderActiveTabData();
-      }
+        showNotification("Stock item removed.");
+      }, "Remove Product");
     }
 
     function renderInventoryTable() {
@@ -1505,7 +1751,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
       const filtered = state.inventory.filter(item => {
         const isCurrentBiz = item.businessId === state.currentBusinessId;
-        const matchesSearch = item.name.toLowerCase().includes(search);
+        const matchesSearch = item.name.toLowerCase().includes(search) || (item.barcode && item.barcode.includes(search));
         const matchesCat = (catFilter === 'All') || (item.category === catFilter);
         return isCurrentBiz && matchesSearch && matchesCat;
       });
@@ -1515,7 +1761,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
           <tr>
             <td colSpan="7" class="p-8 text-center text-muted">
               <i data-lucide="archive" class="w-8 h-8 mx-auto mb-2 block"></i>
-              No catalog listings configured under this category branch.
+              No stock matches found.
             </td>
           </tr>
         `;
@@ -1524,20 +1770,19 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       }
 
       filtered.forEach(item => {
-        const profitVal = item.sellPrice - item.costPrice;
-        const profitPercent = item.sellPrice > 0 ? ((profitVal / item.sellPrice) * 100).toFixed(1) : '0.0';
-        
         const row = document.createElement('tr');
         row.className = "hover:bg-zinc-100 transition-colors";
         row.innerHTML = `
           <td class="p-4">
             <div class="font-extrabold text-sm text-black">${item.name}</div>
-            <div class="text-[9px] text-muted font-mono">ID: ${item.id}</div>
+            <div class="text-[9px] text-muted font-mono flex items-center gap-1 mt-0.5">
+              <i data-lucide="barcode" class="w-3.5 h-3.5"></i> ${item.barcode || 'N/A'}
+            </div>
           </td>
           <td class="p-4">
             <span class="px-2.5 py-1 bg-zinc-200 text-black rounded-full text-[10px] font-bold border border-theme">${item.category}</span>
           </td>
-          <td class="p-4 font-mono font-semibold text-black">${item.costPrice.toFixed(2)}</td>
+          <td class="p-4 font-mono font-semibold text-zinc-600">${item.costPrice.toFixed(2)}</td>
           <td class="p-4 font-mono font-black text-black">${item.sellPrice.toFixed(2)}</td>
           <td class="p-4 text-center">
             <span class="px-2.5 py-1.5 rounded-xl text-xs font-black font-mono inline-block min-w-[50px] ${
@@ -1550,11 +1795,9 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
           </td>
           <td class="p-4 space-y-0.5">
             <div class="text-[10px] text-muted flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
               Created: ${item.dateAdded}
             </div>
             <div class="text-[10px] text-muted flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
               Updated: ${item.dateUpdated}
             </div>
           </td>
@@ -1563,7 +1806,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
               <button onclick="openInventoryModal(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="p-2 text-black hover:bg-zinc-200 rounded-xl transition-colors">
                 <i data-lucide="pencil" class="w-4 h-4"></i>
               </button>
-              <button onclick="deleteInventoryItem('${item.id}')" class="p-2 hover:bg-vibrantRed/20 text-muted hover:text-vibrantRed rounded-xl transition-colors">
+              <button onclick="triggerInventoryDeletion('${item.id}')" class="p-2 hover:bg-vibrantRed/20 text-muted hover:text-vibrantRed rounded-xl transition-colors">
                 <i data-lucide="trash" class="w-4 h-4"></i>
               </button>
             </div>
@@ -1576,7 +1819,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
 
     // ==========================================
-    // 4. POS CASHIER TICKET OPERATIONS
+    // 4. POS CASHIER RECEIPT OPERATIONS
     // ==========================================
     function renderRegisterGrid() {
       const grid = document.getElementById('registerItemGrid');
@@ -1587,7 +1830,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
       const items = state.inventory.filter(item => {
         const isCurrentBiz = item.businessId === state.currentBusinessId;
-        const matchesSearch = item.name.toLowerCase().includes(search);
+        const matchesSearch = item.name.toLowerCase().includes(search) || (item.barcode && item.barcode.includes(search));
         const matchesCat = (catFilter === 'All') || (item.category === catFilter);
         return isCurrentBiz && matchesSearch && matchesCat;
       });
@@ -1596,10 +1839,10 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         grid.innerHTML = `
           <div class="col-span-full panel-card border border-dashed border-theme rounded-[22px] p-8 text-center text-muted">
             <i data-lucide="shopping-bag" class="w-10 h-10 mx-auto text-muted mb-2 block"></i>
-            <p class="font-bold text-base">Register Board Empty</p>
+            <p class="font-bold text-base">Register is Empty</p>
             <p class="text-xs mt-1">Populate items inside the catalog warehouse database first to enable cashier checkouts.</p>
             <button onclick="switchTab('inventory')" class="mt-4 px-4 py-2.5 bg-black text-white text-xs font-bold rounded-xl inline-flex items-center gap-2 border border-theme">
-              <i data-lucide="plus" class="w-4 h-4"></i> Go to Stock Vault
+              <i data-lucide="plus" class="w-4 h-4"></i> Add Products
             </button>
           </div>
         `;
@@ -1629,12 +1872,13 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
                 ${item.category}
               </span>
               ${
-                isOutOfStock ? '<span class="px-2 py-0.5 bg-vibrantRed/15 text-vibrantRed rounded-full text-[9px] font-black uppercase tracking-wider">Out of Stock</span>' :
+                isOutOfStock ? '<span class="px-2 py-0.5 bg-vibrantRed/15 text-vibrantRed rounded-full text-[9px] font-black uppercase tracking-wider">Sold Out</span>' :
                 isLowStock ? `<span class="px-2 py-0.5 bg-amber-500/15 text-amber-500 rounded-full text-[9px] font-black uppercase tracking-wider">Low: ${item.quantity}</span>` :
-                `<span class="px-2 py-0.5 bg-vibrantGreen/15 text-vibrantGreen rounded-full text-[9px] font-bold uppercase tracking-wider">Stock: ${item.quantity}</span>`
+                `<span class="px-2 py-0.5 bg-vibrantGreen/15 text-vibrantGreen rounded-full text-[9px] font-bold uppercase tracking-wider">In Stock: ${item.quantity}</span>`
               }
             </div>
             <h3 class="font-bold text-sm line-clamp-2 min-h-[40px] text-black">${item.name}</h3>
+            ${item.barcode ? `<span class="text-[9px] text-muted font-mono flex items-center gap-1 mt-1"><i data-lucide="barcode" class="w-3 h-3"></i> ${item.barcode}</span>` : ''}
           </div>
 
           <div class="mt-4 pt-3 border-t border-theme flex items-center justify-between">
@@ -1656,15 +1900,14 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
     function addProductToCart(item) {
       const existing = cart.find(c => c.id === item.id);
       
-      // Stock check
       if (item.quantity <= 0) {
-        alert("This item is currently sold out.");
+        showCustomAlert("This item is currently sold out.", "Unavailable Stock");
         return;
       }
 
       if (existing) {
         if (existing.qtySelected >= item.quantity) {
-          alert(`Cannot process. Quantity would exceed current warehouse limits (${item.quantity} units).`);
+          showCustomAlert(`Cannot process. Quantity would exceed current warehouse limits (${item.quantity} units).`, "Overdraft Limit");
           return;
         }
         existing.qtySelected++;
@@ -1675,7 +1918,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         });
       }
 
-      showNotification(`"${item.name}" added to ticket.`);
+      showNotification(`"${item.name}" added to Receipt.`);
       renderCartBasket();
     }
 
@@ -1690,7 +1933,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       if (target <= 0) {
         cart = cart.filter(c => c.id !== itemId);
       } else if (target > originalItem.quantity) {
-        alert(`Insufficient stock. Only ${originalItem.quantity} items available in vault.`);
+        showCustomAlert(`Insufficient stock. Only ${originalItem.quantity} items available.`, "Insufficient Inventory");
       } else {
         cartItem.qtySelected = target;
       }
@@ -1698,11 +1941,9 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       renderCartBasket();
     }
 
-    // --- PAYMENT METHOD OPTION ---
     function setPaymentMethod(method) {
       paymentMethod = method;
       
-      // Toggle button UI
       const methods = ['Cash', 'Card', 'Credit'];
       methods.forEach(m => {
         const el = document.getElementById(`btn-pay-${m.toLowerCase()}`);
@@ -1713,7 +1954,6 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         }
       });
 
-      // Show/Hide credit borrower name input field
       const credDetails = document.getElementById('checkoutCreditDetails');
       if (method === 'Credit') {
         credDetails.classList.remove('hidden');
@@ -1779,7 +2019,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
     function processCheckout() {
       if (cart.length === 0) {
-        alert("The active checkout ticket is empty.");
+        showCustomAlert("The active receipt is empty.", "Checkout Error");
         return;
       }
 
@@ -1788,8 +2028,9 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
 
       if (paymentMethod === 'Credit') {
         const bName = document.getElementById('checkoutCustomerName').value.trim();
+        const dueDateVal = document.getElementById('checkoutDueDate').value;
         if (!bName) {
-          alert("Borrower Name is mandatory for Credit balance sales transactions.");
+          showCustomAlert("Borrower Name is mandatory for Credit transactions.", "Name Required");
           return;
         }
 
@@ -1799,8 +2040,9 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
           name: bName,
           type: 'owe_us',
           amount: totalCost,
-          desc: `Automatic system checkout: ${cart.map(c => `${c.name} (x${c.qtySelected})`).join(', ')}`,
+          desc: `Automated Checkout: ${cart.map(c => `${c.name} (x${c.qtySelected})`).join(', ')}`,
           date: stamps,
+          dueDate: dueDateVal || null,
           status: 'pending'
         };
         state.credits.push(creditRecord);
@@ -1838,15 +2080,16 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       saveStateToStorage();
       cart = [];
       document.getElementById('checkoutCustomerName').value = '';
-      setPaymentMethod('Cash'); // Reset to default cash configuration
+      document.getElementById('checkoutDueDate').value = '';
+      setPaymentMethod('Cash'); 
       
-      showNotification("POS Transaction checkouts completed successfully!");
+      showNotification("Checkout Transaction Saved Successfully!");
       renderActiveTabData();
     }
 
 
     // ==========================================
-    // 5. UNIFIED LIABILITY & CREDIT LEDGER
+    // 5. CREDIT LOG GROUPED LEDGER
     // ==========================================
     function openCreditModal() {
       document.getElementById('modalCredit').classList.remove('hidden');
@@ -1860,14 +2103,15 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       const name = document.getElementById('modalCreditName').value.trim();
       const type = document.getElementById('modalCreditType').value;
       const amount = parseFloat(document.getElementById('modalCreditAmount').value) || 0;
+      const dueDate = document.getElementById('modalCreditDueDate').value;
       const desc = document.getElementById('modalCreditDesc').value.trim();
 
       if (!name) {
-        alert("Please specify borrower or lender counterparty.");
+        showCustomAlert("Please specify client or supplier name.", "Validation Missing");
         return;
       }
       if (amount <= 0) {
-        alert("Please set a valid positive debt cash amount.");
+        showCustomAlert("Please enter a valid cash amount.", "Validation Missing");
         return;
       }
 
@@ -1879,21 +2123,22 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         name,
         type,
         amount,
-        desc: desc || "Manual ledger balance record registration.",
+        desc: desc || "Manual ledger entry.",
         date: stamps,
+        dueDate: dueDate || null,
         status: 'pending'
       };
 
       state.credits.push(newCredit);
       saveStateToStorage();
       
-      // Clean inputs
       document.getElementById('modalCreditName').value = '';
       document.getElementById('modalCreditAmount').value = '';
+      document.getElementById('modalCreditDueDate').value = '';
       document.getElementById('modalCreditDesc').value = '';
 
       closeCreditModal();
-      showNotification("Credit ledger balance entry generated.");
+      showNotification("Ledger Balance Logged Successfully.");
       renderActiveTabData();
     }
 
@@ -1909,102 +2154,159 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       });
       saveStateToStorage();
       renderActiveTabData();
-      showNotification("Ledger balance status toggled.");
+      showNotification("Account Entry Updated.");
     }
 
-    function deleteCreditRecord(id) {
-      if (confirm("Delete this credit entry from ledger history permanently?")) {
+    function triggerCreditDeletion(id) {
+      showCustomConfirm("Delete this credit entry permanently?", function() {
         state.credits = state.credits.filter(c => c.id !== id);
         saveStateToStorage();
         renderActiveTabData();
-      }
+        showNotification("Ledger Log Erased.");
+      }, "Remove Ledger Log");
+    }
+
+    // Helper to group credits by Counterparty
+    function getGroupedCredits(creditsList) {
+      const grouped = {};
+      creditsList.forEach(c => {
+        if (!grouped[c.name]) {
+          grouped[c.name] = {
+            name: c.name,
+            totalOwedToUs: 0, // receivables (owe_us)
+            totalWeOwe: 0,     // payables (we_owe)
+            entries: []
+          };
+        }
+        grouped[c.name].entries.push(c);
+        if (c.status === 'pending') {
+          if (c.type === 'owe_us') {
+            grouped[c.name].totalOwedToUs += c.amount;
+          } else {
+            grouped[c.name].totalWeOwe += c.amount;
+          }
+        }
+      });
+      return Object.values(grouped);
+    }
+
+    function filterDataByDateRange(list, startVal, endVal) {
+      if (!startVal && !endVal) return list;
+      return list.filter(item => {
+        if (!item.date) return true;
+        const itemDateStr = item.date.split(' ')[0]; // extracts YYYY-MM-DD
+        const itemTime = new Date(itemDateStr).getTime();
+        const startTime = startVal ? new Date(startVal).getTime() : 0;
+        const endTime = endVal ? new Date(endVal).getTime() : Infinity;
+        return itemTime >= startTime && itemTime <= endTime;
+      });
     }
 
     function renderCreditLedger() {
-      const receivablesList = document.getElementById('receivablesList');
-      const payablesList = document.getElementById('payablesList');
-
-      receivablesList.innerHTML = '';
-      payablesList.innerHTML = '';
+      const gridContainer = document.getElementById('groupedCreditsGrid');
+      gridContainer.innerHTML = '';
 
       const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
-
+      
+      // Calculate overall stats on pending entries (Unfiltered)
       let weOweTotal = 0;
       let oweUsTotal = 0;
 
-      let oweUsCount = 0;
-      let weOweCount = 0;
-
       credits.forEach(c => {
-        const isResolved = c.status === 'resolved';
-        
-        if (!isResolved) {
+        if (c.status === 'pending') {
           if (c.type === 'we_owe') weOweTotal += c.amount;
           else oweUsTotal += c.amount;
         }
-
-        const card = document.createElement('div');
-        card.className = `p-4 rounded-[18px] border flex flex-col justify-between transition-all ${
-          isResolved 
-            ? 'bg-zinc-100 border-theme opacity-50' 
-            : c.type === 'owe_us' 
-            ? 'panel-card border-vibrantGreen/15 shadow-sm' 
-            : 'panel-card border-vibrantRed/15 shadow-sm'
-        }`;
-
-        card.innerHTML = `
-          <div class="flex justify-between items-start gap-3">
-            <div>
-              <div class="flex items-center gap-2">
-                <h5 class="font-extrabold text-xs text-black">${c.name}</h5>
-                ${isResolved ? '<span class="px-1.5 py-0.5 bg-zinc-200 rounded text-[8px] uppercase font-black text-muted">Settled</span>' : ''}
-              </div>
-              <p class="text-[11px] text-muted mt-1">${c.desc}</p>
-              <div class="text-[10px] text-muted mt-2 font-semibold flex items-center gap-1">
-                <i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${c.date}
-              </div>
-            </div>
-            
-            <div class="text-right flex flex-col items-end">
-              <p class="text-base font-black font-mono ${c.type === 'owe_us' ? 'text-vibrantGreen' : 'text-vibrantRed'}">${c.amount.toFixed(2)}</p>
-              <div class="mt-3 flex items-center gap-1.5">
-                <button onclick="toggleCreditLedgerStatus('${c.id}')" class="px-2 py-1 bg-zinc-200 text-black border border-theme rounded-[10px] text-[9px] font-black uppercase transition-all">
-                  ${isResolved ? 'Re-open' : 'Settle'}
-                </button>
-                <button onclick="deleteCreditRecord('${c.id}')" class="p-1 text-muted hover:text-vibrantRed rounded transition-colors">
-                  <i data-lucide="trash" class="w-3.5 h-3.5"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-
-        if (c.type === 'owe_us') {
-          receivablesList.appendChild(card);
-          if (!isResolved) oweUsCount++;
-        } else {
-          payablesList.appendChild(card);
-          if (!isResolved) weOweCount++;
-        }
       });
 
-      // Set counts
-      document.getElementById('receivablesCountBadge').innerText = `${oweUsCount} Active`;
-      document.getElementById('payablesCountBadge').innerText = `${weOweCount} Active`;
-
-      // Set metrics
       document.getElementById('totalPayableText').innerText = weOweTotal.toFixed(2);
       document.getElementById('totalReceivableText').innerText = oweUsTotal.toFixed(2);
 
       const netPosition = oweUsTotal - weOweTotal;
       const netEl = document.getElementById('netLiquidityText');
       netEl.innerText = `${netPosition >= 0 ? '+' : ''}${netPosition.toFixed(2)}`;
-      
-      if (netPosition >= 0) {
-        netEl.className = "text-2xl font-black text-vibrantGreen font-mono";
-      } else {
-        netEl.className = "text-2xl font-black text-vibrantRed font-mono";
+      netEl.className = netPosition >= 0 ? "text-2xl font-black text-vibrantGreen font-mono" : "text-2xl font-black text-vibrantRed font-mono";
+
+      // Apply date filters if they are present
+      const startVal = document.getElementById('creditFilterStart').value;
+      const endVal = document.getElementById('creditFilterEnd').value;
+      const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
+
+      // Group active lists
+      const grouped = getGroupedCredits(filteredCredits);
+
+      if (grouped.length === 0) {
+        gridContainer.innerHTML = `
+          <div class="col-span-full panel-card p-12 text-center text-muted border border-dashed border-theme rounded-2xl">
+            <i data-lucide="users" class="w-8 h-8 mx-auto mb-2 block"></i>
+            No matching client profiles logged.
+          </div>
+        `;
+        lucide.createIcons();
+        return;
       }
+
+      grouped.forEach(grp => {
+        const card = document.createElement('div');
+        card.className = "panel-card border border-theme rounded-[22px] p-5 flex flex-col space-y-4 shadow-sm";
+        
+        const overallNet = grp.totalOwedToUs - grp.totalWeOwe;
+        let netStatusText = '';
+        if (overallNet > 0) {
+          netStatusText = `<span class="text-xs font-bold text-vibrantGreen bg-vibrantGreen/10 px-2.5 py-1 rounded-full font-mono">Owes us: ${overallNet.toFixed(2)}</span>`;
+        } else if (overallNet < 0) {
+          netStatusText = `<span class="text-xs font-bold text-vibrantRed bg-vibrantRed/10 px-2.5 py-1 rounded-full font-mono">We owe: ${Math.abs(overallNet).toFixed(2)}</span>`;
+        } else {
+          netStatusText = `<span class="text-xs font-bold text-muted bg-zinc-100 px-2.5 py-1 rounded-full">Settle Balanced</span>`;
+        }
+
+        let entriesHTML = '';
+        grp.entries.forEach(ent => {
+          const isResolved = ent.status === 'resolved';
+          entriesHTML += `
+            <div class="p-3 rounded-xl border border-theme text-xs flex justify-between items-start gap-2 ${isResolved ? 'bg-zinc-50 opacity-50' : ''}">
+              <div class="space-y-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="font-bold px-1.5 py-0.5 rounded text-[9px] uppercase font-bold ${ent.type === 'owe_us' ? 'bg-vibrantGreen/15 text-vibrantGreen' : 'bg-vibrantRed/15 text-vibrantRed'}">
+                    ${ent.type === 'owe_us' ? 'Receivable' : 'Payable'}
+                  </span>
+                  <span class="text-[9px] text-muted">${ent.date}</span>
+                </div>
+                <p class="font-semibold text-black leading-tight">${ent.desc}</p>
+                ${ent.dueDate ? `<p class="text-[10px] text-zinc-600 font-bold flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> Due: ${ent.dueDate}</p>` : ''}
+              </div>
+              <div class="text-right shrink-0">
+                <p class="font-bold font-mono text-sm ${ent.type === 'owe_us' ? 'text-vibrantGreen' : 'text-vibrantRed'}">${ent.amount.toFixed(2)}</p>
+                <div class="mt-2 flex items-center gap-1 justify-end">
+                  <button onclick="toggleCreditLedgerStatus('${ent.id}')" class="px-2 py-0.5 bg-zinc-200 border border-theme rounded text-[9px] font-bold text-black hover:bg-zinc-350">
+                    ${isResolved ? 'Re-open' : 'Settle'}
+                  </button>
+                  <button onclick="triggerCreditDeletion('${ent.id}')" class="p-1 hover:bg-zinc-200 rounded">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5 text-muted hover:text-vibrantRed"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start pb-2 border-b border-theme">
+            <div>
+              <h5 class="font-black text-base text-black flex items-center gap-1.5">
+                <i data-lucide="user" class="w-4 h-4 text-muted"></i> ${grp.name}
+              </h5>
+              <p class="text-[10px] text-muted mt-0.5">${grp.entries.length} items grouped</p>
+            </div>
+            ${netStatusText}
+          </div>
+          <div class="space-y-2.5 max-h-[250px] overflow-y-auto no-scrollbar">
+            ${entriesHTML}
+          </div>
+        `;
+        gridContainer.appendChild(card);
+      });
+
       lucide.createIcons();
     }
 
@@ -2014,7 +2316,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
     // ==========================================
     function renderCalculatorOptions() {
       const select = document.getElementById('calcVaultImport');
-      select.innerHTML = '<option value="" disabled selected>-- Select Import Vault Product --</option>';
+      select.innerHTML = '<option value="" disabled selected>-- Import Product Blueprint --</option>';
 
       const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
       items.forEach(i => {
@@ -2038,12 +2340,12 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         document.getElementById('calcSell').value = item.sellPrice;
         
         updateSandboxEstimations();
-        showNotification(`Loaded template: ${item.name}`);
+        showNotification(`Loaded Product details for: ${item.name}`);
       }
     }
 
     function updateSandboxEstimations() {
-      const label = document.getElementById('calcLabel').value || "Conceptual Deal Sandbox";
+      const label = document.getElementById('calcLabel').value || "Quick Estimation sandbox";
       const cost = parseFloat(document.getElementById('calcCost').value) || 0;
       const sell = parseFloat(document.getElementById('calcSell').value) || 0;
       const qty = Math.max(1, parseInt(document.getElementById('calcQty').value) || 1);
@@ -2074,13 +2376,16 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       container.innerHTML = '';
 
       const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
+      const startVal = document.getElementById('calcFilterStart').value;
+      const endVal = document.getElementById('calcFilterEnd').value;
+      const filteredSales = filterDataByDateRange(sales, startVal, endVal);
 
-      if (sales.length === 0) {
+      if (filteredSales.length === 0) {
         container.innerHTML = `
           <tr>
             <td colSpan="5" class="p-8 text-center text-muted">
               <i data-lucide="calculator" class="w-8 h-8 mx-auto mb-2 block"></i>
-              No margins recorded. Process retail sales checkouts first.
+              No completed checkouts found inside this range.
             </td>
           </tr>
         `;
@@ -2088,7 +2393,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         return;
       }
 
-      const sortedSales = [...sales].reverse();
+      const sortedSales = [...filteredSales].reverse();
 
       sortedSales.forEach(s => {
         const itemProfit = (s.sellPrice - s.costPrice) * s.quantity;
@@ -2125,11 +2430,17 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
       const inventory = state.inventory.filter(i => i.businessId === state.currentBusinessId);
 
+      const startVal = document.getElementById('reportsFilterStart').value;
+      const endVal = document.getElementById('reportsFilterEnd').value;
+
+      const filteredSales = filterDataByDateRange(sales, startVal, endVal);
+      const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
+
       let grossRevenue = 0;
       let totalCost = 0;
       let netProfit = 0;
 
-      sales.forEach(s => {
+      filteredSales.forEach(s => {
         grossRevenue += s.sellPrice * s.quantity;
         totalCost += s.costPrice * s.quantity;
         netProfit += s.totalProfit;
@@ -2149,9 +2460,8 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         document.getElementById('kpiLowStockCount').className = "text-2xl font-black text-vibrantGreen font-mono";
       }
 
-      // Rebuild Category bar contributions
       const categorySalesMap = {};
-      sales.forEach(s => {
+      filteredSales.forEach(s => {
         categorySalesMap[s.category] = (categorySalesMap[s.category] || 0) + (s.sellPrice * s.quantity);
       });
 
@@ -2159,7 +2469,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       chartList.innerHTML = '';
 
       if (Object.keys(categorySalesMap).length === 0) {
-        chartList.innerHTML = '<p class="text-xs text-muted py-6 text-center">No retail sales recorded to plot metrics.</p>';
+        chartList.innerHTML = '<p class="text-xs text-muted py-6 text-center">No transactions registered in this date range.</p>';
       } else {
         Object.entries(categorySalesMap).forEach(([cat, value]) => {
           const ratio = grossRevenue > 0 ? ((value / grossRevenue) * 100).toFixed(0) : '0';
@@ -2179,11 +2489,10 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
         });
       }
 
-      // Rebuild Credit risk comparison progress bar
       let payablesUnresolved = 0;
       let receivablesUnresolved = 0;
 
-      credits.forEach(c => {
+      filteredCredits.forEach(c => {
         if (c.status === 'pending') {
           if (c.type === 'we_owe') payablesUnresolved += c.amount;
           else receivablesUnresolved += c.amount;
@@ -2200,7 +2509,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       if (totalPool === 0) {
         riskBar.innerHTML = `
           <div class="w-full h-full bg-zinc-100 flex items-center justify-center text-[10px] text-muted font-bold uppercase tracking-wider">
-            Clear Credit Portfolio Status
+            All Credit Cleared & Healthy
           </div>
         `;
       } else {
@@ -2211,7 +2520,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
           const bar = document.createElement('div');
           bar.className = "bg-vibrantGreen h-full flex items-center justify-center text-black text-[9px] font-black transition-all";
           bar.style.width = `${recPercent}%`;
-          bar.innerText = recPercent > 15 ? `${recPercent}% Rec` : '';
+          bar.innerText = recPercent > 15 ? `${recPercent}% Receivables` : '';
           riskBar.appendChild(bar);
         }
 
@@ -2219,7 +2528,7 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
           const bar = document.createElement('div');
           bar.className = "bg-vibrantRed h-full flex items-center justify-center text-white text-[9px] font-black transition-all";
           bar.style.width = `${payPercent}%`;
-          bar.innerText = payPercent > 15 ? `${payPercent}% Pay` : '';
+          bar.innerText = payPercent > 15 ? `${payPercent}% Payables` : '';
           riskBar.appendChild(bar);
         }
       }
@@ -2230,14 +2539,14 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
     // 8. PRINT & EXPORT ENGINE (RECIPIENTS & PDF)
     // ==========================================
     
-    // --- PRINT DETAILED CHECOUT RECEIPT (THERMAL PRINTER COMPATIBLE) ---
+    // --- PRINT DETAILED CHECKOUT RECEIPT (THERMAL PRINTER COMPATIBLE) ---
     function triggerReceiptPrint() {
       if (cart.length === 0) {
-        alert("The active checkout ticket is empty. Cannot generate empty receipt.");
+        showCustomAlert("The active ticket is empty.", "Print Error");
         return;
       }
 
-      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Retail Branch', type: 'General Store' };
+      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Shop Branch', type: 'General' };
       const receiptId = 'REC-' + Math.floor(Math.random() * 900000 + 100000);
       const subtotal = cart.reduce((sum, item) => sum + (item.sellPrice * item.qtySelected), 0);
       const stamps = getSystemTimestamp();
@@ -2245,32 +2554,31 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       let itemsRows = '';
       cart.forEach(item => {
         itemsRows += `
-          <tr style="border-bottom: 1px dashed #000; font-size: 12px;">
-            <td style="padding: 6px 0;">${item.name}<br/><small style="font-size: 10px;">${item.qtySelected} x ${item.sellPrice.toFixed(2)}</small></td>
-            <td style="text-align: right; padding: 6px 0; font-family: monospace;">${(item.sellPrice * item.qtySelected).toFixed(2)}</td>
+          <tr style="border-bottom: 1px dashed #000; font-size: 11px;">
+            <td style="padding: 5px 0;">${item.name}<br/><small style="font-size: 9px;">${item.qtySelected} x ${item.sellPrice.toFixed(2)}</small></td>
+            <td style="text-align: right; padding: 5px 0; font-family: monospace;">${(item.sellPrice * item.qtySelected).toFixed(2)}</td>
           </tr>
         `;
       });
 
-      // Compact layout engineered strictly for Thermal 80mm/58mm printers
       const receiptHTML = `
-        <div style="font-family: monospace; width: 100%; max-width: 300px; margin: 0 auto; color: #000; background: #fff; font-size: 12px; line-height: 1.4;">
-          <div style="text-align: center; margin-bottom: 12px;">
-            <h1 style="font-size: 20px; font-weight: bold; margin: 0; text-transform: uppercase;">${activeBiz.name}</h1>
-            <p style="font-size: 10px; margin: 4px 0 0 0; text-transform: uppercase; border-bottom: 1px dashed #000; padding-bottom: 10px;">${activeBiz.type} Segment</p>
+        <div style="font-family: monospace; width: 100%; max-width: 280px; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; padding: 10px;">
+          <div style="text-align: center; margin-bottom: 10px;">
+            <h1 style="font-size: 18px; font-weight: bold; margin: 0; text-transform: uppercase;">${activeBiz.name}</h1>
+            <p style="font-size: 9px; margin: 3px 0 0 0; text-transform: uppercase; border-bottom: 1px dashed #000; padding-bottom: 8px;">Segment: ${activeBiz.type}</p>
           </div>
           
-          <div style="font-size: 10px; margin-bottom: 12px;">
-            <div>TKT NO: ${receiptId}</div>
+          <div style="font-size: 9px; margin-bottom: 10px;">
+            <div>RECEIPT NO: ${receiptId}</div>
             <div>DATE: ${stamps}</div>
-            <div>PAYMENT: ${paymentMethod}</div>
+            <div>PAYMENT OPTION: ${paymentMethod}</div>
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
             <thead>
-              <tr style="border-bottom: 1px solid #000; font-size: 10px; text-transform: uppercase; text-align: left;">
-                <th style="padding-bottom: 4px;">Item</th>
-                <th style="text-align: right; padding-bottom: 4px;">Total</th>
+              <tr style="border-bottom: 1px solid #000; font-size: 9px; text-transform: uppercase; text-align: left;">
+                <th style="padding-bottom: 3px;">Item</th>
+                <th style="text-align: right; padding-bottom: 3px;">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -2278,21 +2586,21 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
             </tbody>
           </table>
 
-          <div style="font-size: 12px; border-top: 1px solid #000; padding-top: 8px; margin-bottom: 20px;">
+          <div style="font-size: 11px; border-top: 1px solid #000; padding-top: 6px; margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
               <span>Subtotal:</span>
               <span style="font-family: monospace;">${subtotal.toFixed(2)}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-top: 3px;">
               <span>TOTAL:</span>
               <span style="font-family: monospace;">${subtotal.toFixed(2)}</span>
             </div>
           </div>
 
-          <div style="text-align: center; font-size: 10px; border-top: 1px dashed #000; padding-top: 12px;">
+          <div style="text-align: center; font-size: 9px; border-top: 1px dashed #000; padding-top: 8px;">
             <p style="margin: 0; font-weight: bold;">Thank you for shopping!</p>
-            <p style="margin: 6px 0 0 0; font-size: 9px;">
-              Made by <a href="https://alfatehcreative.agency/" target="_blank" style="color: #000; text-decoration: none; font-weight: bold;">Asim Lone @alfatehcreatives</a>
+            <p style="margin: 4px 0 0 0; font-size: 8px; color: #555;">
+              OnyxPOS Manager Systems
             </p>
           </div>
         </div>
@@ -2301,39 +2609,358 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       executePrintJob(receiptHTML);
     }
 
-    // --- VIEW PDF DOWNLOAD GENERATOR ---
-    function exportViewToPDF(elementId, titleLabel) {
-      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Branch' };
+    // --- FORMAL COMPREHENSIVE PDF REPORT GENERATION ENGINE ---
+    function exportViewToPDF(reportType, titleLabel) {
+      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Store Branch', type: 'General' };
       const stamps = getSystemTimestamp();
       
-      let sourceElement = document.getElementById(elementId);
-      if (!sourceElement) return;
+      let tableContentHTML = '';
+      let dateRangeSubtitle = 'Complete Ledger Report';
 
+      if (reportType === 'register') {
+        const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
+        tableContentHTML = `
+          <h4 style="font-size: 13px; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">Register Catalog Index (${items.length} items)</h4>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; margin-bottom: 15px;">
+            <thead>
+              <tr style="background-color: #F4F4F5; border-bottom: 2px solid #E4E4E7;">
+                <th style="padding: 8px;">Product Name</th>
+                <th style="padding: 8px;">Category</th>
+                <th style="padding: 8px; text-align: right;">Unit Cost</th>
+                <th style="padding: 8px; text-align: right;">Retail Price</th>
+                <th style="padding: 8px; text-align: center;">Stock level</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(item => `
+                <tr style="border-bottom: 1px solid #E4E4E7;">
+                  <td style="padding: 8px; font-weight: bold;">${item.name}</td>
+                  <td style="padding: 8px;">${item.category}</td>
+                  <td style="padding: 8px; text-align: right; font-family: monospace;">${item.costPrice.toFixed(2)}</td>
+                  <td style="padding: 8px; text-align: right; font-family: monospace; font-weight: bold;">${item.sellPrice.toFixed(2)}</td>
+                  <td style="padding: 8px; text-align: center; font-family: monospace;">${item.quantity}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+      } else if (reportType === 'inventory') {
+        const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
+        const totalStockValue = items.reduce((acc, curr) => acc + (curr.costPrice * curr.quantity), 0);
+        const totalRetailVal = items.reduce((acc, curr) => acc + (curr.sellPrice * curr.quantity), 0);
+        tableContentHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; font-size: 11px;">
+            <div style="background-color: #FAFAFA; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Total Stock Asset Cost Value:</strong><br/>
+              <span style="font-size: 16px; font-weight: 800; font-family: monospace;">${totalStockValue.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #FAFAFA; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Expected Sale Yield:</strong><br/>
+              <span style="font-size: 16px; font-weight: 800; font-family: monospace; color: #00E676;">${totalRetailVal.toFixed(2)}</span>
+            </div>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
+            <thead>
+              <tr style="background-color: #F4F4F5; border-bottom: 2px solid #E4E4E7;">
+                <th style="padding: 8px;">Catalog ID / Name</th>
+                <th style="padding: 8px;">Category</th>
+                <th style="padding: 8px; text-align: right;">Cost Price</th>
+                <th style="padding: 8px; text-align: right;">Retail Price</th>
+                <th style="padding: 8px; text-align: center;">Stock</th>
+                <th style="padding: 8px;">Last Sync Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(item => `
+                <tr style="border-bottom: 1px solid #E4E4E7;">
+                  <td style="padding: 8px;">
+                    <div style="font-weight: bold;">${item.name}</div>
+                    <div style="font-size: 8px; color: #71717A; font-family: monospace;">SKU: ${item.barcode || 'N/A'}</div>
+                  </td>
+                  <td style="padding: 8px;">${item.category}</td>
+                  <td style="padding: 8px; text-align: right; font-family: monospace;">${item.costPrice.toFixed(2)}</td>
+                  <td style="padding: 8px; text-align: right; font-family: monospace;">${item.sellPrice.toFixed(2)}</td>
+                  <td style="padding: 8px; text-align: center; font-weight: bold; font-family: monospace;">${item.quantity}</td>
+                  <td style="padding: 8px; font-size: 9px; color: #71717A;">${item.dateUpdated}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+      } else if (reportType === 'credit') {
+        const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
+        
+        const startVal = document.getElementById('creditFilterStart').value;
+        const endVal = document.getElementById('creditFilterEnd').value;
+        const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
+
+        if (startVal || endVal) {
+          dateRangeSubtitle = `Audit Period: ${startVal || 'Inception'} To ${endVal || 'Present'}`;
+        }
+
+        const outstandingOwedToUs = filteredCredits.filter(c => c.type === 'owe_us' && c.status === 'pending');
+        const outstandingWeOwe = filteredCredits.filter(c => c.type === 'we_owe' && c.status === 'pending');
+
+        const totalReceivable = outstandingOwedToUs.reduce((acc, curr) => acc + curr.amount, 0);
+        const totalPayable = outstandingWeOwe.reduce((acc, curr) => acc + curr.amount, 0);
+
+        tableContentHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 11px;">
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Collectibles:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; color: #00E676; font-family: monospace;">${totalReceivable.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Payables:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; color: #FF1744; font-family: monospace;">${totalPayable.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Net Credit Exposure:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; font-family: monospace;">${(totalReceivable - totalPayable).toFixed(2)}</span>
+            </div>
+          </div>
+
+          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px;">Active Debtors (Collectibles)</h4>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; margin-bottom: 20px;">
+            <thead>
+              <tr style="background-color: #FAFAFA; border-bottom: 1px solid #E4E4E7;">
+                <th style="padding: 6px;">Counterparty</th>
+                <th style="padding: 6px;">Details</th>
+                <th style="padding: 6px;">Due Date</th>
+                <th style="padding: 6px; text-align: right;">Outstanding Bal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${outstandingOwedToUs.length === 0 ? '<tr><td colspan="4" style="padding: 8px; text-align: center; color: #71717A;">No collectible receivables active.</td></tr>' : outstandingOwedToUs.map(c => `
+                <tr style="border-bottom: 1px solid #E4E4E7;">
+                  <td style="padding: 6px; font-weight: bold;">${c.name}</td>
+                  <td style="padding: 6px;">${c.desc}</td>
+                  <td style="padding: 6px; font-weight: bold; color: #FF1744;">${c.dueDate || 'N/A'}</td>
+                  <td style="padding: 6px; text-align: right; font-weight: bold; font-family: monospace; color: #00E676;">${c.amount.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px;">Liabilities Owed</h4>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+            <thead>
+              <tr style="background-color: #FAFAFA; border-bottom: 1px solid #E4E4E7;">
+                <th style="padding: 6px;">Supplier</th>
+                <th style="padding: 6px;">Details</th>
+                <th style="padding: 6px;">Due Date</th>
+                <th style="padding: 6px; text-align: right;">Amount Owed</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${outstandingWeOwe.length === 0 ? '<tr><td colspan="4" style="padding: 8px; text-align: center; color: #71717A;">No payable liabilities registered.</td></tr>' : outstandingWeOwe.map(c => `
+                <tr style="border-bottom: 1px solid #E4E4E7;">
+                  <td style="padding: 6px; font-weight: bold;">${c.name}</td>
+                  <td style="padding: 6px;">${c.desc}</td>
+                  <td style="padding: 6px; font-weight: bold; color: #FF1744;">${c.dueDate || 'N/A'}</td>
+                  <td style="padding: 6px; text-align: right; font-weight: bold; font-family: monospace; color: #FF1744;">${c.amount.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+      } else if (reportType === 'calculator') {
+        const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
+        
+        const startVal = document.getElementById('calcFilterStart').value;
+        const endVal = document.getElementById('calcFilterEnd').value;
+        const filteredSales = filterDataByDateRange(sales, startVal, endVal);
+
+        if (startVal || endVal) {
+          dateRangeSubtitle = `Audit Period: ${startVal || 'Inception'} To ${endVal || 'Present'}`;
+        }
+
+        const sortedSales = [...filteredSales].reverse();
+        
+        let totalSalesRevenue = 0;
+        let totalSalesProfit = 0;
+
+        sortedSales.forEach(s => {
+          totalSalesRevenue += s.sellPrice * s.quantity;
+          totalSalesProfit += s.totalProfit;
+        });
+
+        const overallMarginPct = totalSalesRevenue > 0 ? ((totalSalesProfit / totalSalesRevenue) * 100).toFixed(1) : '0.0';
+
+        tableContentHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 11px;">
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Aggregate Sales Volume:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; font-family: monospace;">${totalSalesRevenue.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Realized Net Margin:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; color: #00E676; font-family: monospace;">${totalSalesProfit.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Profit Margin:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; font-family: monospace;">${overallMarginPct}%</span>
+            </div>
+          </div>
+
+          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px;">Completed Margins Stream History Log</h4>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+            <thead>
+              <tr style="background-color: #FAFAFA; border-bottom: 2px solid #E4E4E7;">
+                <th style="padding: 8px;">Checkout Date</th>
+                <th style="padding: 8px;">Product Description</th>
+                <th style="padding: 8px; text-align: center;">Qty</th>
+                <th style="padding: 8px; text-align: right;">Net Revenue</th>
+                <th style="padding: 8px; text-align: right;">Realized Profit</th>
+                <th style="padding: 8px; text-align: center;">Margin %</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sortedSales.length === 0 ? '<tr><td colspan="6" style="padding: 12px; text-align: center; color: #71717A;">No records found inside this date threshold.</td></tr>' : sortedSales.map(s => {
+                const marginPercent = s.sellPrice > 0 ? (((s.sellPrice - s.costPrice) / s.sellPrice) * 100).toFixed(1) : '0.0';
+                return `
+                  <tr style="border-bottom: 1px solid #E4E4E7;">
+                    <td style="padding: 8px; color: #71717A; font-family: monospace;">${s.date}</td>
+                    <td style="padding: 8px;">
+                      <div style="font-weight: bold;">${s.itemName}</div>
+                      <div style="font-size: 8px; color: #71717A; text-transform: uppercase;">${s.category}</div>
+                    </td>
+                    <td style="padding: 8px; text-align: center; font-family: monospace;">${s.quantity}</td>
+                    <td style="padding: 8px; text-align: right; font-family: monospace;">${(s.sellPrice * s.quantity).toFixed(2)}</td>
+                    <td style="padding: 8px; text-align: right; font-family: monospace; font-weight: bold; color: #00E676;">+${s.totalProfit.toFixed(2)}</td>
+                    <td style="padding: 8px; text-align: center; font-weight: bold; font-family: monospace;">${marginPercent}%</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+
+      } else if (reportType === 'reports') {
+        const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
+        const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
+        const inventory = state.inventory.filter(i => i.businessId === state.currentBusinessId);
+
+        const startVal = document.getElementById('reportsFilterStart').value;
+        const endVal = document.getElementById('reportsFilterEnd').value;
+
+        const filteredSales = filterDataByDateRange(sales, startVal, endVal);
+        const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
+
+        if (startVal || endVal) {
+          dateRangeSubtitle = `Audit Period: ${startVal || 'Inception'} To ${endVal || 'Present'}`;
+        }
+
+        let grossRevenue = 0;
+        let totalCost = 0;
+        let netProfit = 0;
+
+        filteredSales.forEach(s => {
+          grossRevenue += s.sellPrice * s.quantity;
+          totalCost += s.costPrice * s.quantity;
+          netProfit += s.totalProfit;
+        });
+
+        const averageMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(1) : '0.0';
+        const lowStockCount = inventory.filter(i => i.quantity <= 10).length;
+
+        // Recalculate dynamic category sales mapping inside reports PDF generator to avoid undefined error
+        const categorySalesMapPDF = {};
+        filteredSales.forEach(s => {
+          categorySalesMapPDF[s.category] = (categorySalesMapPDF[s.category] || 0) + (s.sellPrice * s.quantity);
+        });
+
+        // Liabilities calculation
+        let payablesUnresolved = 0;
+        let receivablesUnresolved = 0;
+        filteredCredits.forEach(c => {
+          if (c.status === 'pending') {
+            if (c.type === 'we_owe') payablesUnresolved += c.amount;
+            else receivablesUnresolved += c.amount;
+          }
+        });
+
+        tableContentHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 11px;">
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Sales Volume:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; font-family: monospace;">${grossRevenue.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Net Clean Profit:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; color: #00E676; font-family: monospace;">${netProfit.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Profit margin:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; font-family: monospace;">${averageMargin}%</span>
+            </div>
+            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 10px; border-radius: 6px;">
+              <strong>Low Stocks:</strong><br/>
+              <span style="font-size: 16px; font-weight: bold; color: ${lowStockCount > 0 ? '#FF1744' : '#00E676'}; font-family: monospace;">${lowStockCount} items</span>
+            </div>
+          </div>
+
+          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 12px;">Operating Risk Position</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; font-size: 10px;">
+            <div style="background-color: #E8F5E9; border: 1px solid #C8E6C9; padding: 10px; border-radius: 6px;">
+              <strong style="color: #2E7D32;">Receivables Collectibles:</strong><br/>
+              <span style="font-size: 15px; font-weight: 800; font-family: monospace; color: #2E7D32;">${receivablesUnresolved.toFixed(2)}</span>
+            </div>
+            <div style="background-color: #FFEBEE; border: 1px solid #FFCDD2; padding: 10px; border-radius: 6px;">
+              <strong style="color: #C62828;">Payable Liabilities:</strong><br/>
+              <span style="font-size: 15px; font-weight: 800; font-family: monospace; color: #C62828;">${payablesUnresolved.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px;">Categorical Contributions</h4>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+            <thead>
+              <tr style="background-color: #FAFAFA; border-bottom: 1px solid #E4E4E7;">
+                <th style="padding: 6px;">Category Name</th>
+                <th style="padding: 6px; text-align: right;">Realized Sales Contribution</th>
+                <th style="padding: 6px; text-align: center;">Share %</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.keys(categorySalesMapPDF).length === 0 ? '<tr><td colspan="3" style="padding: 8px; text-align: center; color: #71717A;">No category logs captured inside this date range.</td></tr>' : Object.entries(categorySalesMapPDF).map(([cat, value]) => {
+                const ratio = grossRevenue > 0 ? ((value / grossRevenue) * 100).toFixed(0) : '0';
+                return `
+                  <tr style="border-bottom: 1px solid #E4E4E7;">
+                    <td style="padding: 6px; font-weight: bold;">${cat}</td>
+                    <td style="padding: 6px; text-align: right; font-family: monospace;">${value.toFixed(2)}</td>
+                    <td style="padding: 6px; text-align: center; font-family: monospace; font-weight: bold;">${ratio}%</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      // PDF layout naming includes titleLabel, activeBiz, and stamps
       const printHTML = `
-        <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; padding: 40px; color: #000000; background-color: #ffffff; min-height: 100%;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000000; padding-bottom: 20px; margin-bottom: 30px;">
+        <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; padding: 35px; color: #000000; background-color: #ffffff; min-height: 100%; line-height: 1.4;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000000; padding-bottom: 15px; margin-bottom: 20px;">
             <div>
-              <h1 style="font-size: 28px; font-weight: 800; margin: 0; text-transform: uppercase;">${activeBiz.name}</h1>
-              <p style="font-size: 12px; color: #71717A; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Enterprise Audit Summary</p>
+              <h1 style="font-size: 22px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: -0.5px;">${activeBiz.name}</h1>
+              <p style="font-size: 10px; color: #71717A; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Operating Segment: ${activeBiz.type}</p>
+              <p style="font-size: 10px; color: #000000; margin: 5px 0 0 0; font-weight: bold;">${dateRangeSubtitle}</p>
             </div>
-            <div style="text-align: right; font-size: 12px; color: #71717A;">
-              <div><strong>DOCUMENT:</strong> ${titleLabel}</div>
-              <div><strong>DATE GENERATED:</strong> ${stamps}</div>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 40px;">
-            <h3 style="font-size: 18px; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #E4E4E7; padding-bottom: 6px;">Report Content Block</h3>
-            <div style="font-size: 13px;">
-              ${sourceElement.outerHTML}
+            <div style="text-align: right; font-size: 10px; color: #71717A;">
+              <div style="margin-bottom: 2px;"><strong>DOCUMENT:</strong> ${titleLabel}</div>
+              <div><strong>AUDIT TIMESTAMP:</strong> ${stamps}</div>
             </div>
           </div>
 
-          <div style="text-align: center; border-top: 1px solid #E4E4E7; padding-top: 20px; margin-top: 50px; font-size: 11px; color: #71717A;">
-            <p style="margin: 0; font-weight: 500;">OnyxPOS Premium Offline Ledger Report Statement.</p>
-            <p style="margin: 6px 0 0 0;">
-              Made by <a href="https://alfatehcreative.agency/" target="_blank" style="text-decoration: underline; font-weight: 700; color: #000000;">Asim Lone @alfatehcreatives</a>
-            </p>
+          <div style="margin-bottom: 30px;">
+            ${tableContentHTML}
+          </div>
+
+          <div style="text-align: center; border-top: 1px solid #E4E4E7; padding-top: 15px; margin-top: 40px; font-size: 10px; color: #71717A;">
+            <p style="margin: 0; font-weight: 600;">OnyxPOS Easy Shop Manager Statement. All rights reserved.</p>
           </div>
         </div>
       `;
@@ -2341,12 +2968,10 @@ navigator.serviceWorker.register('/onyxprototype/sw.js')
       executePrintJob(printHTML);
     }
 
-    // --- UNIVERSAL PRINT/PDF ENGINE CONTROLLER ---
+    // --- UNIVERSAL PRINT/PDF ENGINE CONTROLLER (Mobile Safe Renderer) ---
     function executePrintJob(htmlContent) {
       const printArea = document.getElementById('printArea');
       printArea.innerHTML = htmlContent;
-
-      // Remove class hidden briefly, trigger print system, re-hide
       printArea.classList.remove('hidden');
       window.print();
       printArea.classList.add('hidden');

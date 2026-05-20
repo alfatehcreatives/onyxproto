@@ -82,9 +82,10 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+    /* Strictly Hide print headers/footers URL natively */
     @media print {
       @page {
-        margin: 0;
+        margin: 0mm;
         size: auto;
       }
       body {
@@ -210,9 +211,9 @@
     <!-- Sidebar Footer Actions & Watermark -->
     <div class="p-5 mt-auto space-y-6">
       <div class="text-center opacity-40 hover:opacity-100 transition-opacity pb-2">
-        <a href="https://alfatehcreative.agency/" target="_blank" class="text-[9px] font-bold text-muted uppercase tracking-widest leading-relaxed inline-block">
+        <span class="text-[9px] font-bold text-muted uppercase tracking-widest leading-relaxed inline-block">
           Made by Asim Lone<br/>@alfatehcreatives
-        </a>
+        </span>
       </div>
 
       <!-- Hard Reset Database -->
@@ -298,8 +299,8 @@
               </button>
             </div>
 
-            <!-- Core Grid Container -->
-            <div id="registerItemGrid" class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
+            <!-- Core Grid Container: Updated to 5 in a row on larger screens -->
+            <div id="registerItemGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2 sm:gap-3">
               <!-- Dynamically populated register items -->
             </div>
           </div>
@@ -1092,9 +1093,6 @@
     <span id="toastMessage" class="text-xs font-black tracking-wide">Operation Completed</span>
   </div>
 
-  <!-- Audio Element for Barcode Scan Beep -->
-  <audio id="scanBeep" src="scanbeep.mp3" preload="auto"></audio>
-
   <!-- Hidden printer viewport context area -->
   <div id="printArea" class="hidden"></div>
 
@@ -1137,31 +1135,49 @@
       }
     };
 
+    // --- SOUND SYNTHESIS SYSTEM (No external MP3 needed) ---
+    function playBeepSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(850, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      } catch (e) {
+        console.log("Audio synthesized blocked by browser policy.", e);
+      }
+    }
+
     // --- KEYBOARD HARDWARE BARCODE SCANNER DETECTOR ---
-    // Hardware scanners typically type characters fast and end with an 'Enter' keypress
     let barcodeBuffer = '';
     let lastKeyTime = Date.now();
 
     function setupKeyboardBarcodeScanner() {
       document.addEventListener('keydown', function(e) {
-        // Only trigger barcode capture when not focused on an input to avoid interrupting natural user typing
+        // Handle explicit input focus interactions
         if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
-          // If the target is the Cashier Search barcode scanner trigger directly
-          if (document.activeElement.id === 'registerSearch') {
+          if (document.activeElement.id === 'registerSearch' || document.activeElement.id === 'inventorySearch' || document.activeElement.id === 'modalInvBarcode') {
             if (e.key === 'Enter') {
               e.preventDefault();
               const scannedText = document.activeElement.value.trim();
               if (scannedText) {
                 processBarcodeAction(scannedText);
-                document.activeElement.value = '';
               }
             }
           }
           return;
         }
 
+        // Hardware scanners type extremely fast (< 50ms per key)
         const currentTime = Date.now();
-        if (currentTime - lastKeyTime > 150) {
+        if (currentTime - lastKeyTime > 50) {
           barcodeBuffer = '';
         }
         lastKeyTime = currentTime;
@@ -1178,28 +1194,37 @@
       });
     }
 
-    // Process a successfully captured barcode directly (Context-Aware to check if product dialog is open)
+    // Process a successfully captured barcode directly
     function processBarcodeAction(barcode) {
       barcode = barcode.trim();
       if (!barcode) return;
 
-      // Check if Add/Edit Product Modal is currently open
       const modalInv = document.getElementById('modalInventory');
       if (modalInv && !modalInv.classList.contains('hidden')) {
         const barcodeInp = document.getElementById('modalInvBarcode');
         if (barcodeInp) {
           barcodeInp.value = barcode;
-          showNotification(`Barcode "${barcode}" captured inside product setup form!`);
+          playBeepSound();
+          showNotification(`Barcode "${barcode}" captured!`);
         }
         return;
       }
 
-      // Find product with matching barcode inside the active business context
-      const product = state.inventory.find(i => i.barcode === barcode && i.businessId === state.currentBusinessId);
+      // Convert scanned barcode to string for reliable comparisons
+      const product = state.inventory.find(i => String(i.barcode) === barcode && i.businessId === state.currentBusinessId);
       
       if (product) {
-        addProductToCart(product);
-        showNotification(`Scanned "${product.name}" successfully!`);
+        playBeepSound();
+        if (activeTab === 'register') {
+          addProductToCart(product);
+          document.getElementById('registerSearch').value = ''; 
+          renderRegisterGrid();
+        } else if (activeTab === 'inventory') {
+          document.getElementById('inventorySearch').value = barcode;
+          renderInventoryTable();
+        } else {
+          showNotification(`Scanned "${product.name}" successfully!`);
+        }
       } else {
         showCustomAlert(`Product with barcode "${barcode}" not found in stock catalog.`, "Barcode Not Found");
       }
@@ -1329,19 +1354,8 @@
           { facingMode: "environment" },
           config,
           (decodedText) => {
-            // Scanner successfully scanned a barcode
             document.getElementById(barcodeTargetInputId).value = decodedText;
-            
-            // Play Beep
-            const beep = document.getElementById('scanBeep');
-            if (beep) {
-              beep.currentTime = 0;
-              beep.play().catch(err => console.log('Audio play prevented by browser', err));
-            }
-
             stopBarcodeScan();
-            
-            // Route barcode context-aware action triggers
             processBarcodeAction(decodedText);
           },
           () => {
@@ -2895,7 +2909,6 @@
         const averageMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(1) : '0.0';
         const lowStockCount = inventory.filter(i => i.businessId === state.currentBusinessId && i.quantity <= 10).length;
 
-        // Recalculate dynamic category sales mapping inside reports PDF generator to avoid undefined error
         const categorySalesMapPDF = {};
         filteredSales.forEach(s => {
           categorySalesMapPDF[s.category] = (categorySalesMapPDF[s.category] || 0) + (s.sellPrice * s.quantity);
@@ -2988,7 +3001,7 @@
           </div>
 
           <div style="text-align: center; border-top: 1px solid #E4E4E7; padding-top: 15px; margin-top: 40px; font-size: 10px; color: #71717A;">
-            <p style="margin: 0; font-weight: 600;">OnyxPOS Easy Shop Manager Statement. All rights reserved.</p>
+            <p style="margin: 0; font-weight: 600;">OnyxPOS Statement. Strictly Internal & Confidential.</p>
           </div>
         </div>
       `;
@@ -3003,32 +3016,19 @@
       const safeSection = section.replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `${safeBranch}_${safeSection}_${fileNameDate}.pdf`;
       
-      const container = document.createElement('div');
-      container.innerHTML = htmlContent;
-      container.style.padding = '20px';
-      container.style.width = '800px'; 
-      container.style.backgroundColor = '#ffffff';
-      container.style.color = '#000000';
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '-9999px';
-      
-      document.body.appendChild(container);
-
       const opt = {
-        margin:       0.3,
+        margin:       [0.5, 0.5, 0.5, 0.5],
         filename:     fileName,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 800 },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
 
-      html2pdf().set(opt).from(container).save().then(() => {
-        document.body.removeChild(container);
+      // By passing the HTML string directly, html2pdf completely bypasses DOM clipping constraints.
+      html2pdf().set(opt).from(htmlContent).save().then(() => {
         showNotification(`Downloaded ${fileName}`);
       }).catch(err => {
         console.error("PDF Export failed", err);
-        document.body.removeChild(container);
         showCustomAlert("Failed to generate PDF file.", "Export Error");
       });
     }

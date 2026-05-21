@@ -282,11 +282,6 @@
                 />
               </div>
 
-              <!-- Barcode Live Cam Trigger -->
-              <button onclick="startBarcodeScan('registerSearch')" class="p-2.5 bg-zinc-100 border border-theme hover:bg-zinc-200 text-black rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all" title="Scan with Camera">
-                <i data-lucide="scan-barcode" class="w-4 h-4"></i> Scan
-              </button>
-              
               <!-- Quick Category Filter -->
               <div class="w-full sm:w-auto">
                 <select 
@@ -314,14 +309,20 @@
           <div class="space-y-4">
             <div class="panel-card border border-theme rounded-[22px] flex flex-col overflow-hidden min-h-[500px]">
               
-              <div class="p-5 border-b border-theme flex justify-between items-center bg-zinc-50">
+              <div class="p-4 border-b border-theme flex justify-between items-center bg-zinc-50">
                 <div class="flex items-center gap-2">
                   <i data-lucide="receipt" class="text-muted w-5 h-5"></i>
                   <h3 class="font-bold text-sm tracking-tight text-black">Active Receipt</h3>
                 </div>
-                <span id="cartCountBadge" class="px-2.5 py-1 bg-zinc-200 rounded-full text-[10px] font-extrabold text-black">
-                  0 Items
-                </span>
+                <div class="flex items-center gap-2">
+                  <!-- NEW SCAN BUTTON PLACEMENT -->
+                  <button onclick="startBarcodeScan('directCart')" class="px-3 py-1.5 bg-black text-white hover:bg-zinc-800 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-md" title="Scan Barcode to Add to Cart">
+                    <i data-lucide="scan-barcode" class="w-3.5 h-3.5"></i> Scan Item
+                  </button>
+                  <span id="cartCountBadge" class="px-2.5 py-1 bg-zinc-200 rounded-full text-[10px] font-extrabold text-black hidden sm:inline-block">
+                    0 Items
+                  </span>
+                </div>
               </div>
 
               <!-- Ticket Basket list -->
@@ -1121,9 +1122,26 @@
     let cart = [];
     let html5QrcodeScanner = null;
     let barcodeTargetInputId = null;
+    let isProcessingScan = false; // Debounce flag for camera scanner
 
     // Custom Modal Queue System Callback References
     let onConfirmProceedCallback = null;
+
+    // Audio Context Setup for robust beeps
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+    // Initialize audio on first user click to bypass autoplay restrictions
+    document.addEventListener('click', initAudio, { once: true });
 
     // --- SETUP & BOOTSTRAP SYSTEM ---
     window.onload = function() {
@@ -1140,30 +1158,39 @@
       }
     };
 
-    // --- SOUND BEEP ENGINE (Tries custom file scanbeep.mp3, falls back to Web Audio synthesize) ---
+    // --- SOUND BEEP ENGINE (Fallback to Synth if MP3 fails) ---
     function playBeepSound() {
-      const scanBeepAudio = document.getElementById('scanBeep');
-      if (scanBeepAudio) {
-        scanBeepAudio.currentTime = 0;
-        scanBeepAudio.play().catch(err => {
-          // Play synth fallback if user interaction/browser prevents file playing
-          try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContext) return;
-            const ctx = new AudioContext();
-            const osc = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(850, ctx.currentTime);
-            gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
-            osc.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.08);
-          } catch (e) {
-            console.log("Audio block: user interaction needed.");
+      initAudio(); // Ensure context is ready
+      try {
+        const scanBeepAudio = document.getElementById('scanBeep');
+        if (scanBeepAudio && scanBeepAudio.readyState >= 2) {
+          scanBeepAudio.currentTime = 0;
+          const playPromise = scanBeepAudio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => playSynthBeep());
           }
-        });
+        } else {
+          playSynthBeep();
+        }
+      } catch (e) {
+        playSynthBeep();
+      }
+    }
+
+    function playSynthBeep() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(850, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1); // Short 100ms beep
+      } catch (e) {
+        console.log("Audio API issue", e);
       }
     }
 
@@ -1181,7 +1208,7 @@
               const scannedText = document.activeElement.value.trim().replace(/[\r\n]/g, '');
               if (scannedText) {
                 processBarcodeAction(scannedText);
-                document.activeElement.value = ''; // Direct clearing
+                // Clear active input after processing if handled by processBarcodeAction
               }
             }
           }
@@ -1209,7 +1236,7 @@
 
     // Process a successfully captured barcode directly
     function processBarcodeAction(barcode) {
-      barcode = barcode.trim().replace(/[\r\n]/g, '');
+      barcode = String(barcode).trim().replace(/[\r\n]/g, '');
       if (!barcode) return;
 
       const modalInv = document.getElementById('modalInventory');
@@ -1230,10 +1257,13 @@
         playBeepSound();
         if (activeTab === 'register') {
           addProductToCart(product);
-          document.getElementById('registerSearch').value = ''; 
+          // Directly clean search if it was used
+          const searchInput = document.getElementById('registerSearch');
+          if(searchInput) searchInput.value = ''; 
           renderRegisterGrid();
         } else if (activeTab === 'inventory') {
-          document.getElementById('inventorySearch').value = barcode;
+          const invSearch = document.getElementById('inventorySearch');
+          if(invSearch) invSearch.value = barcode;
           renderInventoryTable();
         } else {
           showNotification(`Scanned "${product.name}" successfully!`);
@@ -1357,20 +1387,33 @@
 
     // --- CAMERA BARCODE SCANNER CORE ---
     function startBarcodeScan(inputId) {
+      initAudio(); // Prepare audio for scan success beep
       barcodeTargetInputId = inputId;
       document.getElementById('modalBarcodeScan').classList.remove('hidden');
       
       setTimeout(() => {
         html5QrcodeScanner = new Html5Qrcode("cameraScanViewport");
-        const config = { fps: 15, qrbox: { width: 250, height: 150 } };
+        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
         
         html5QrcodeScanner.start(
           { facingMode: "environment" },
           config,
           (decodedText) => {
-            document.getElementById(barcodeTargetInputId).value = decodedText;
+            // Debounce to prevent multiple immediate scans triggering multiple cart adds
+            if (isProcessingScan) return;
+            isProcessingScan = true;
+
+            // If a specific input target was provided (and it's not the direct checkout trigger)
+            if (barcodeTargetInputId !== 'directCart') {
+                const targetEl = document.getElementById(barcodeTargetInputId);
+                if (targetEl) targetEl.value = decodedText;
+            }
+            
             stopBarcodeScan();
             processBarcodeAction(decodedText);
+            
+            // Allow another scan after a 1.5 second cooldown
+            setTimeout(() => { isProcessingScan = false; }, 1500);
           },
           () => {
             // Quiet fail handler for constant camera scanning frames
@@ -2046,7 +2089,7 @@
           <div class="h-full flex flex-col items-center justify-center text-center p-6 text-muted my-auto">
             <i data-lucide="receipt" class="w-8 h-8 text-muted mb-2"></i>
             <p class="text-xs font-bold">Ticket is empty</p>
-            <p class="text-[10px] text-muted mt-1 max-w-[180px]">Select active products from the registry on your left.</p>
+            <p class="text-[10px] text-muted mt-1 max-w-[180px]">Select active products from the registry on your left, or scan barcodes to populate.</p>
           </div>
         `;
         document.getElementById('cartCountBadge').innerText = "0 Items";
@@ -3007,27 +3050,37 @@
         `;
       }
 
-      // PDF layout naming includes titleLabel, activeBiz, and stamps
+      // PDF layout naming includes titleLabel, activeBiz, and stamps with Watermark added
       const printHTML = `
-        <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #000000; background-color: #ffffff; line-height: 1.4;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000000; padding-bottom: 15px; margin-bottom: 20px;">
-            <div>
-              <h1 style="font-size: 22px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: -0.5px;">${activeBiz.name}</h1>
-              <p style="font-size: 10px; color: #71717A; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Operating Segment: ${activeBiz.type}</p>
-              <p style="font-size: 10px; color: #000000; margin: 5px 0 0 0; font-weight: bold;">${dateRangeSubtitle}</p>
-            </div>
-            <div style="text-align: right; font-size: 10px; color: #71717A;">
-              <div style="margin-bottom: 2px;"><strong>DOCUMENT:</strong> ${titleLabel}</div>
-              <div><strong>AUDIT TIMESTAMP:</strong> ${stamps}</div>
+        <div style="position: relative; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #000000; background-color: #ffffff; line-height: 1.4; padding: 15px; min-height: 1024px; overflow: hidden;">
+          <!-- Watermark Layer -->
+          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; display: flex; align-items: center; justify-content: center;">
+            <div style="transform: rotate(-45deg); font-size: 130px; color: rgba(0,0,0,0.03); font-weight: 900; letter-spacing: 5px; white-space: nowrap;">
+              ONYXPOS SYSTEM
             </div>
           </div>
+          
+          <!-- Content Layer -->
+          <div style="position: relative; z-index: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000000; padding-bottom: 15px; margin-bottom: 20px;">
+              <div>
+                <h1 style="font-size: 22px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: -0.5px;">${activeBiz.name}</h1>
+                <p style="font-size: 10px; color: #71717A; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Operating Segment: ${activeBiz.type}</p>
+                <p style="font-size: 10px; color: #000000; margin: 5px 0 0 0; font-weight: bold;">${dateRangeSubtitle}</p>
+              </div>
+              <div style="text-align: right; font-size: 10px; color: #71717A;">
+                <div style="margin-bottom: 2px;"><strong>DOCUMENT:</strong> ${titleLabel}</div>
+                <div><strong>AUDIT TIMESTAMP:</strong> ${stamps}</div>
+              </div>
+            </div>
 
-          <div style="margin-bottom: 30px;">
-            ${tableContentHTML}
-          </div>
+            <div style="margin-bottom: 30px;">
+              ${tableContentHTML}
+            </div>
 
-          <div style="text-align: center; border-top: 1px solid #E4E4E7; padding-top: 15px; margin-top: 40px; font-size: 10px; color: #71717A;">
-            <p style="margin: 0; font-weight: 600;">OnyxPOS Statement. Strictly Internal & Confidential.</p>
+            <div style="text-align: center; border-top: 1px solid #E4E4E7; padding-top: 15px; margin-top: 40px; font-size: 10px; color: #71717A;">
+              <p style="margin: 0; font-weight: 600;">OnyxPOS Statement. Strictly Internal & Confidential.</p>
+            </div>
           </div>
         </div>
       `;
@@ -3044,14 +3097,14 @@
       
       const container = document.createElement('div');
       container.innerHTML = htmlContent;
-      // Fixed absolute coordinates vertical tracking bug by setting top: 0 to prevent blank page generation
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
+      // Completely fixed off-screen capture bug by switching absolute to fixed, hiding behind all content without sacrificing DOM height calculations 
+      container.style.position = 'fixed';
+      container.style.left = '0';
       container.style.top = '0';
+      container.style.zIndex = '-9999';
       container.style.width = '1024px'; // Perfectly scaled desktop page boundary
-      container.style.background = '#ffffff';
+      container.style.backgroundColor = '#ffffff';
       container.style.color = '#000000';
-      container.className = 'p-8';
       document.body.appendChild(container);
 
       const opt = {

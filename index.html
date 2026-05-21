@@ -25,9 +25,6 @@
   <!-- HTML5 QR Code Scanner Library for Camera Barcode Scanning -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   
-  <!-- html2pdf for Direct PDF Downloads -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  
   <script>
     tailwind.config = {
       theme: {
@@ -217,7 +214,8 @@
     <div class="p-5 mt-auto space-y-6">
       <div class="text-center opacity-40 hover:opacity-100 transition-opacity pb-2">
         <span class="text-[9px] font-bold text-muted uppercase tracking-widest leading-relaxed inline-block">
-          Made by Asim Lone<br/>@alfatehcreatives
+          Made by Asim Lone<br/>
+          <a href="https://www.alfatehcreative.agency" target="_blank" class="hover:text-black transition-colors underline">@alfatehcreatives</a>
         </span>
       </div>
 
@@ -1123,6 +1121,7 @@
     let html5QrcodeScanner = null;
     let barcodeTargetInputId = null;
     let isProcessingScan = false; // Debounce flag for camera scanner
+    let sessionScannedCodes = new Set(); // To prevent scanning same QR multiple times continuously
 
     // Custom Modal Queue System Callback References
     let onConfirmProceedCallback = null;
@@ -1365,6 +1364,7 @@
     // --- CAMERA BARCODE SCANNER CORE ---
     function startBarcodeScan(inputId) {
       barcodeTargetInputId = inputId;
+      sessionScannedCodes.clear(); // Clear recent scans for "1 QR Scanned Only Once"
       document.getElementById('modalBarcodeScan').classList.remove('hidden');
       
       setTimeout(() => {
@@ -1376,21 +1376,32 @@
             { facingMode: "environment" },
             config,
             (decodedText) => {
-              // Debounce logic prevents double-triggering scanning immediately
               if (isProcessingScan) return;
-              isProcessingScan = true;
+              
+              if (barcodeTargetInputId === 'directCart') {
+                // CONTINUOUS SCAN MODE FOR CHECKOUT
+                if (sessionScannedCodes.has(decodedText)) {
+                  // Prevent re-scanning the exact same code rapidly to satisfy "1 qr scanned only once"
+                  return; 
+                }
+                sessionScannedCodes.add(decodedText);
+                isProcessingScan = true;
 
-              // Do NOT dump into search bar if it's explicitly the receipt cart triggering
-              if (barcodeTargetInputId !== 'directCart') {
-                  const targetEl = document.getElementById(barcodeTargetInputId);
-                  if (targetEl) targetEl.value = decodedText;
+                processBarcodeAction(decodedText);
+                
+                // Do NOT close camera modal for directCart to allow continuous scanning
+                setTimeout(() => { isProcessingScan = false; }, 1000); 
+              } else {
+                // SINGLE SCAN MODE FOR INVENTORY / OTHER INPUTS
+                isProcessingScan = true;
+                const targetEl = document.getElementById(barcodeTargetInputId);
+                if (targetEl) targetEl.value = decodedText;
+                
+                stopBarcodeScan();
+                processBarcodeAction(decodedText);
+                
+                setTimeout(() => { isProcessingScan = false; }, 1500);
               }
-              
-              stopBarcodeScan();
-              processBarcodeAction(decodedText);
-              
-              // Enable scanning again after cooldown
-              setTimeout(() => { isProcessingScan = false; }, 1500);
             },
             () => {
               // Quiet frame reading fails logic
@@ -3037,8 +3048,8 @@
       const printHTML = `
         <div style="position: relative; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #000000; background-color: #ffffff; line-height: 1.4; padding: 25px; min-height: 1024px; overflow: hidden; z-index: 1;">
           <!-- Watermark Layer securely fixed to center -->
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 130px; color: rgba(0,0,0,0.03); font-weight: 900; letter-spacing: 5px; white-space: nowrap; z-index: -1; pointer-events: none;">
-            ONYXPOS SYSTEM
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60px; color: rgba(0,0,0,0.04); font-weight: 900; letter-spacing: 2px; white-space: nowrap; z-index: -1; pointer-events: none; text-align: center;">
+            MADE BY ASIM LONE<br/>@ALFATEHCREATIVES
           </div>
           
           <!-- Content Layer -->
@@ -3071,47 +3082,20 @@
 
     // --- DIRECT PDF DOWNLOAD GENERATOR ---
     function generateDirectPDF(htmlContent, branchName, section, dateStr) {
-      const fileNameDate = dateStr.replace(/[: ]/g, '_');
-      const safeBranch = branchName.replace(/[^a-zA-Z0-9]/g, '_');
-      const safeSection = section.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `${safeBranch}_${safeSection}_${fileNameDate}.pdf`;
-      
-      const container = document.createElement('div');
-      container.innerHTML = htmlContent;
-      // Fixed absolute positioning so HTML2Canvas can predictably capture without cropping on mobile screens
-      container.style.position = 'absolute';
-      container.style.left = '0px';
-      container.style.top = '-9999px';
-      container.style.width = '1024px'; // Enforce perfect document width scaling
-      container.style.backgroundColor = '#ffffff';
-      container.style.color = '#000000';
-      document.body.appendChild(container);
+      // Modern robust fallback: use native browser printing engine
+      // This is highly compatible across iOS, Android, and Desktop and natively supports "Save as PDF"
+      const printArea = document.getElementById('printArea');
+      printArea.innerHTML = htmlContent;
+      printArea.classList.remove('hidden');
 
-      const opt = {
-        margin:       [0.4, 0.4, 0.4, 0.4],
-        filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false, 
-          scrollY: 0,
-          windowWidth: 1024 
-        },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
+      showNotification(`Opening ${section} Report... Select 'Save as PDF' to download.`);
 
-      // Set timeout to allow the browser to parse/paint styles before handing off to html2pdf
+      // Give DOM time to render complex tables before calling native print module
       setTimeout(() => {
-        html2pdf().set(opt).from(container).save().then(() => {
-          if (document.body.contains(container)) document.body.removeChild(container);
-          showNotification(`Downloaded ${fileName}`);
-        }).catch(err => {
-          console.error("PDF Export failed", err);
-          if (document.body.contains(container)) document.body.removeChild(container);
-          showCustomAlert("Failed to generate PDF file.", "Export Error");
-        });
-      }, 100);
+        window.print();
+        printArea.classList.add('hidden');
+        printArea.innerHTML = '';
+      }, 500);
     }
 
     // --- UNIVERSAL PRINT/PDF ENGINE CONTROLLER (Mobile Safe Renderer) ---

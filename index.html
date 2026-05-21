@@ -315,9 +315,9 @@
                   <h3 class="font-bold text-sm tracking-tight text-black">Active Receipt</h3>
                 </div>
                 <div class="flex items-center gap-2">
-                  <!-- NEW SCAN BUTTON PLACEMENT -->
-                  <button onclick="startBarcodeScan('directCart')" class="px-3 py-1.5 bg-black text-white hover:bg-zinc-800 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-md" title="Scan Barcode to Add to Cart">
-                    <i data-lucide="scan-barcode" class="w-3.5 h-3.5"></i> Scan Item
+                  <!-- DIRECT CART SCAN BUTTON -->
+                  <button onclick="startBarcodeScan('directCart')" class="px-4 py-2 bg-black text-white hover:bg-zinc-800 rounded-xl flex items-center justify-center gap-2 text-xs font-bold shadow-lg transition-all" title="Scan Barcode to Add to Cart">
+                    <i data-lucide="scan-barcode" class="w-4 h-4"></i> Add via Scan
                   </button>
                   <span id="cartCountBadge" class="px-2.5 py-1 bg-zinc-200 rounded-full text-[10px] font-extrabold text-black hidden sm:inline-block">
                     0 Items
@@ -1127,22 +1127,6 @@
     // Custom Modal Queue System Callback References
     let onConfirmProceedCallback = null;
 
-    // Audio Context Setup for robust beeps
-    let audioCtx = null;
-    function initAudio() {
-      if (!audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) {
-          audioCtx = new AudioContext();
-        }
-      }
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-    // Initialize audio on first user click to bypass autoplay restrictions
-    document.addEventListener('click', initAudio, { once: true });
-
     // --- SETUP & BOOTSTRAP SYSTEM ---
     window.onload = function() {
       loadStateFromStorage();
@@ -1158,39 +1142,18 @@
       }
     };
 
-    // --- SOUND BEEP ENGINE (Fallback to Synth if MP3 fails) ---
-    function playBeepSound() {
-      initAudio(); // Ensure context is ready
+    // --- SOUND BEEP ENGINE (No more synth conflicts) ---
+    function safePlayBeep() {
       try {
-        const scanBeepAudio = document.getElementById('scanBeep');
-        if (scanBeepAudio && scanBeepAudio.readyState >= 2) {
-          scanBeepAudio.currentTime = 0;
-          const playPromise = scanBeepAudio.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(() => playSynthBeep());
-          }
-        } else {
-          playSynthBeep();
+        const beep = document.getElementById('scanBeep');
+        if (beep) {
+          beep.currentTime = 0;
+          beep.play().catch(() => {
+            // Silently ignore autoplay rejections so UI operations never halt
+          });
         }
       } catch (e) {
-        playSynthBeep();
-      }
-    }
-
-    function playSynthBeep() {
-      if (!audioCtx) return;
-      try {
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(850, audioCtx.currentTime);
-        gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.1); // Short 100ms beep
-      } catch (e) {
-        console.log("Audio API issue", e);
+        console.warn('Beep error safely bypassed.');
       }
     }
 
@@ -1200,7 +1163,7 @@
 
     function setupKeyboardBarcodeScanner() {
       document.addEventListener('keydown', function(e) {
-        // Handle explicit input focus interactions
+        // Handle explicit input focus interactions (if they manually scan while focused)
         if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
           if (document.activeElement.id === 'registerSearch' || document.activeElement.id === 'inventorySearch' || document.activeElement.id === 'modalInvBarcode') {
             if (e.key === 'Enter') {
@@ -1208,7 +1171,6 @@
               const scannedText = document.activeElement.value.trim().replace(/[\r\n]/g, '');
               if (scannedText) {
                 processBarcodeAction(scannedText);
-                // Clear active input after processing if handled by processBarcodeAction
               }
             }
           }
@@ -1234,42 +1196,57 @@
       });
     }
 
-    // Process a successfully captured barcode directly
+    // --- UNIVERSAL BARCODE PROCESSING ACTION ---
     function processBarcodeAction(barcode) {
-      barcode = String(barcode).trim().replace(/[\r\n]/g, '');
-      if (!barcode) return;
+      try {
+        barcode = String(barcode).trim().replace(/[\r\n]/g, '');
+        if (!barcode) return;
 
-      const modalInv = document.getElementById('modalInventory');
-      if (modalInv && !modalInv.classList.contains('hidden')) {
-        const barcodeInp = document.getElementById('modalInvBarcode');
-        if (barcodeInp) {
-          barcodeInp.value = barcode;
-          playBeepSound();
-          showNotification(`Barcode "${barcode}" captured!`);
+        // 1. If Add/Edit Modal is open, populate exactly there and return
+        const modalInv = document.getElementById('modalInventory');
+        if (modalInv && !modalInv.classList.contains('hidden')) {
+          const barcodeInp = document.getElementById('modalInvBarcode');
+          if (barcodeInp) {
+            barcodeInp.value = barcode;
+            safePlayBeep();
+            showNotification(`Barcode "${barcode}" captured!`);
+          }
+          return;
         }
-        return;
-      }
 
-      // Convert scanned barcode to string for reliable comparisons
-      const product = state.inventory.find(i => String(i.barcode).trim() === barcode && i.businessId === state.currentBusinessId);
-      
-      if (product) {
-        playBeepSound();
-        if (activeTab === 'register') {
-          addProductToCart(product);
-          // Directly clean search if it was used
-          const searchInput = document.getElementById('registerSearch');
-          if(searchInput) searchInput.value = ''; 
-          renderRegisterGrid();
-        } else if (activeTab === 'inventory') {
-          const invSearch = document.getElementById('inventorySearch');
-          if(invSearch) invSearch.value = barcode;
-          renderInventoryTable();
+        // 2. Main workflow logic cross-referencing DB
+        const product = state.inventory.find(i => String(i.barcode).trim() === barcode && i.businessId === state.currentBusinessId);
+        
+        if (product) {
+          safePlayBeep();
+          if (activeTab === 'register') {
+            addProductToCart(product);
+            const searchInput = document.getElementById('registerSearch');
+            if(searchInput) searchInput.value = ''; 
+            renderRegisterGrid();
+          } else if (activeTab === 'inventory') {
+            const invSearch = document.getElementById('inventorySearch');
+            if(invSearch) invSearch.value = barcode;
+            renderInventoryTable();
+          } else {
+            showNotification(`Scanned "${product.name}" successfully!`);
+          }
         } else {
-          showNotification(`Scanned "${product.name}" successfully!`);
+          // IF NOT FOUND IN CATALOG:
+          if (activeTab === 'inventory') {
+            // Graceful non-blocking action inside stock vault: fill the search bar and filter to empty table
+            safePlayBeep();
+            const invSearch = document.getElementById('inventorySearch');
+            if (invSearch) invSearch.value = barcode;
+            renderInventoryTable();
+            showNotification(`Barcode ${barcode} not found. Ready to register.`);
+          } else {
+            // Cashier section error popup
+            showCustomAlert(`Product with barcode "${barcode}" not found in your catalog. Please add it to the Stock Vault first.`, "Unknown Barcode");
+          }
         }
-      } else {
-        showCustomAlert(`Product with barcode "${barcode}" not found in stock catalog.`, "Barcode Not Found");
+      } catch (err) {
+        console.error("Critical Scanner Processing Error:", err);
       }
     }
 
@@ -1387,52 +1364,58 @@
 
     // --- CAMERA BARCODE SCANNER CORE ---
     function startBarcodeScan(inputId) {
-      initAudio(); // Prepare audio for scan success beep
       barcodeTargetInputId = inputId;
       document.getElementById('modalBarcodeScan').classList.remove('hidden');
       
       setTimeout(() => {
-        html5QrcodeScanner = new Html5Qrcode("cameraScanViewport");
-        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
-        
-        html5QrcodeScanner.start(
-          { facingMode: "environment" },
-          config,
-          (decodedText) => {
-            // Debounce to prevent multiple immediate scans triggering multiple cart adds
-            if (isProcessingScan) return;
-            isProcessingScan = true;
+        try {
+          html5QrcodeScanner = new Html5Qrcode("cameraScanViewport");
+          const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+          
+          html5QrcodeScanner.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+              // Debounce logic prevents double-triggering scanning immediately
+              if (isProcessingScan) return;
+              isProcessingScan = true;
 
-            // If a specific input target was provided (and it's not the direct checkout trigger)
-            if (barcodeTargetInputId !== 'directCart') {
-                const targetEl = document.getElementById(barcodeTargetInputId);
-                if (targetEl) targetEl.value = decodedText;
+              // Do NOT dump into search bar if it's explicitly the receipt cart triggering
+              if (barcodeTargetInputId !== 'directCart') {
+                  const targetEl = document.getElementById(barcodeTargetInputId);
+                  if (targetEl) targetEl.value = decodedText;
+              }
+              
+              stopBarcodeScan();
+              processBarcodeAction(decodedText);
+              
+              // Enable scanning again after cooldown
+              setTimeout(() => { isProcessingScan = false; }, 1500);
+            },
+            () => {
+              // Quiet frame reading fails logic
             }
-            
+          ).catch((err) => {
+            showCustomAlert("Could not access camera. Please verify your camera permissions.", "Scanner Error");
             stopBarcodeScan();
-            processBarcodeAction(decodedText);
-            
-            // Allow another scan after a 1.5 second cooldown
-            setTimeout(() => { isProcessingScan = false; }, 1500);
-          },
-          () => {
-            // Quiet fail handler for constant camera scanning frames
-          }
-        ).catch((err) => {
-          showCustomAlert("Could not start camera. Please verify camera permissions are granted.", "Scanner Error");
+          });
+        } catch (err) {
+          showCustomAlert("Camera initialization failed.", "Scanner Error");
           stopBarcodeScan();
-        });
+        }
       }, 300);
     }
 
     function stopBarcodeScan() {
       document.getElementById('modalBarcodeScan').classList.add('hidden');
       if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().then(() => {
-          html5QrcodeScanner = null;
-        }).catch(() => {
-          html5QrcodeScanner = null;
-        });
+        const scannerRef = html5QrcodeScanner;
+        html5QrcodeScanner = null; // Decouple immediately to prevent loops
+        try {
+          scannerRef.stop().then(() => {
+            scannerRef.clear();
+          }).catch(() => {});
+        } catch(e) {}
       }
     }
 
@@ -1926,7 +1909,7 @@
         // Direct matching barcode verification (supports continuous scanner streaming)
         const exactMatch = state.inventory.find(i => i.barcode && String(i.barcode).trim() === val && i.businessId === state.currentBusinessId);
         if (exactMatch) {
-          playBeepSound();
+          safePlayBeep();
           addProductToCart(exactMatch);
           document.getElementById('registerSearch').value = ''; // Instant checkout clearing
           renderRegisterGrid();
@@ -3052,12 +3035,10 @@
 
       // PDF layout naming includes titleLabel, activeBiz, and stamps with Watermark added
       const printHTML = `
-        <div style="position: relative; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #000000; background-color: #ffffff; line-height: 1.4; padding: 15px; min-height: 1024px; overflow: hidden;">
-          <!-- Watermark Layer -->
-          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; display: flex; align-items: center; justify-content: center;">
-            <div style="transform: rotate(-45deg); font-size: 130px; color: rgba(0,0,0,0.03); font-weight: 900; letter-spacing: 5px; white-space: nowrap;">
-              ONYXPOS SYSTEM
-            </div>
+        <div style="position: relative; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #000000; background-color: #ffffff; line-height: 1.4; padding: 25px; min-height: 1024px; overflow: hidden; z-index: 1;">
+          <!-- Watermark Layer securely fixed to center -->
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 130px; color: rgba(0,0,0,0.03); font-weight: 900; letter-spacing: 5px; white-space: nowrap; z-index: -1; pointer-events: none;">
+            ONYXPOS SYSTEM
           </div>
           
           <!-- Content Layer -->
@@ -3097,12 +3078,11 @@
       
       const container = document.createElement('div');
       container.innerHTML = htmlContent;
-      // Completely fixed off-screen capture bug by switching absolute to fixed, hiding behind all content without sacrificing DOM height calculations 
-      container.style.position = 'fixed';
-      container.style.left = '0';
-      container.style.top = '0';
-      container.style.zIndex = '-9999';
-      container.style.width = '1024px'; // Perfectly scaled desktop page boundary
+      // Fixed absolute positioning so HTML2Canvas can predictably capture without cropping on mobile screens
+      container.style.position = 'absolute';
+      container.style.left = '0px';
+      container.style.top = '-9999px';
+      container.style.width = '1024px'; // Enforce perfect document width scaling
       container.style.backgroundColor = '#ffffff';
       container.style.color = '#000000';
       document.body.appendChild(container);
@@ -3115,22 +3095,23 @@
           scale: 2, 
           useCORS: true, 
           logging: false, 
-          width: 1024,
+          scrollY: 0,
           windowWidth: 1024 
         },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
 
-      html2pdf().set(opt).from(container).save().then(() => {
-        document.body.removeChild(container);
-        showNotification(`Downloaded ${fileName}`);
-      }).catch(err => {
-        console.error("PDF Export failed", err);
-        if (container.parentNode) {
-          document.body.removeChild(container);
-        }
-        showCustomAlert("Failed to generate PDF file.", "Export Error");
-      });
+      // Set timeout to allow the browser to parse/paint styles before handing off to html2pdf
+      setTimeout(() => {
+        html2pdf().set(opt).from(container).save().then(() => {
+          if (document.body.contains(container)) document.body.removeChild(container);
+          showNotification(`Downloaded ${fileName}`);
+        }).catch(err => {
+          console.error("PDF Export failed", err);
+          if (document.body.contains(container)) document.body.removeChild(container);
+          showCustomAlert("Failed to generate PDF file.", "Export Error");
+        });
+      }, 100);
     }
 
     // --- UNIVERSAL PRINT/PDF ENGINE CONTROLLER (Mobile Safe Renderer) ---

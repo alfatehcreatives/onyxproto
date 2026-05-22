@@ -4,7 +4,7 @@
   "description": "Premium POS",
   "start_url": "/onyxproto",
   "scope": "/onyxproto",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",

@@ -1470,9 +1470,12 @@
     }
 
     // --- CUSTOM PROMPT CONFIRM DIALOG ---
-    function showCustomConfirm(msg, onProceed, title = "Verification Required") {
+    function showCustomConfirm(msg, onProceed, title = "Verification Required", proceedText = "Proceed", cancelText = "Cancel", onCancel = null) {
       document.getElementById('confirmTitle').innerText = title;
       document.getElementById('confirmMessage').innerText = msg;
+      document.getElementById('confirmProceedBtn').innerText = proceedText;
+      document.getElementById('confirmCancelBtn').innerText = cancelText;
+      
       onConfirmProceedCallback = onProceed;
       
       const confirmModal = document.getElementById('modalConfirm');
@@ -1481,6 +1484,7 @@
       document.getElementById('confirmCancelBtn').onclick = function() {
         confirmModal.classList.add('hidden');
         onConfirmProceedCallback = null;
+        if(onCancel) onCancel();
       };
       
       document.getElementById('confirmProceedBtn').onclick = function() {
@@ -2111,49 +2115,62 @@
         return;
       }
 
+      // Group Items by Category for organized visual presentation on POS Grid
+      const groupedItems = {};
       items.forEach(item => {
-        const isOutOfStock = item.quantity === 0;
-        const isLowStock = item.quantity <= 10 && !isOutOfStock;
+        if (!groupedItems[item.category]) groupedItems[item.category] = [];
+        groupedItems[item.category].push(item);
+      });
 
-        const card = document.createElement('div');
-        // Compact alignment
-        card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
-          isOutOfStock 
-            ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
-            : 'hover:border-current hover:shadow-md'
-        }`;
-        
-        if (!isOutOfStock) {
-          card.onclick = () => addProductToCart(item);
-        }
+      Object.keys(groupedItems).sort().forEach(category => {
+        // Build Category Section Header
+        const headerDiv = document.createElement('div');
+        headerDiv.className = "col-span-full mt-4 mb-1 first:mt-0";
+        headerDiv.innerHTML = `<h3 class="font-black text-[10px] sm:text-xs text-muted uppercase tracking-wider border-b border-theme pb-1">${category}</h3>`;
+        grid.appendChild(headerDiv);
 
-        card.innerHTML = `
-          <div class="flex flex-col h-full text-left">
-            <div class="flex justify-between items-center gap-0.5 mb-1 sm:mb-2">
-              <span class="px-1 py-0.2 bg-zinc-100 border border-theme text-black rounded text-[6px] sm:text-[9px] font-bold uppercase tracking-wider truncate max-w-[32px] sm:max-w-[100px]">
-                ${item.category}
-              </span>
-              ${
-                isOutOfStock ? '<span class="px-1 py-0.2 bg-vibrantRed/15 text-vibrantRed rounded text-[6px] sm:text-[9px] font-black uppercase">0</span>' :
-                isLowStock ? `<span class="px-1 py-0.2 bg-amber-500/15 text-amber-500 rounded text-[6px] sm:text-[9px] font-black">${item.quantity}</span>` :
-                `<span class="px-1 py-0.2 bg-vibrantGreen/15 text-vibrantGreen rounded text-[6px] sm:text-[9px] font-bold">${item.quantity}</span>`
-              }
-            </div>
-            <h3 class="font-bold text-[7px] sm:text-xs line-clamp-2 min-h-[20px] sm:min-h-[34px] text-black leading-tight">${item.name}</h3>
-            ${item.barcode ? `<span class="text-[5px] sm:text-[8px] text-muted font-mono flex items-center gap-0.5 mt-0.5 truncate"><i data-lucide="barcode" class="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5"></i> ${item.barcode}</span>` : ''}
-            
-            <div class="mt-auto pt-1 sm:pt-2.5 border-t border-theme flex items-center justify-between gap-0.5">
-              <div>
-                <p class="text-[7px] sm:text-xs font-black font-mono text-black">${item.sellPrice.toFixed(2)}</p>
+        // Map Items under Category Header
+        groupedItems[category].forEach(item => {
+          const isOutOfStock = item.quantity === 0;
+          const isLowStock = item.quantity <= 10 && !isOutOfStock;
+
+          const card = document.createElement('div');
+          // Compact alignment
+          card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
+            isOutOfStock 
+              ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
+              : 'hover:border-current hover:shadow-md'
+          }`;
+          
+          if (!isOutOfStock) {
+            card.onclick = () => addProductToCart(item);
+          }
+
+          card.innerHTML = `
+            <div class="flex flex-col h-full text-left">
+              <div class="flex justify-end items-center gap-0.5 mb-1 sm:mb-2">
+                ${
+                  isOutOfStock ? '<span class="px-1 py-0.2 bg-vibrantRed/15 text-vibrantRed rounded text-[6px] sm:text-[9px] font-black uppercase">0</span>' :
+                  isLowStock ? `<span class="px-1 py-0.2 bg-amber-500/15 text-amber-500 rounded text-[6px] sm:text-[9px] font-black">${item.quantity}</span>` :
+                  `<span class="px-1 py-0.2 bg-vibrantGreen/15 text-vibrantGreen rounded text-[6px] sm:text-[9px] font-bold">${item.quantity}</span>`
+                }
               </div>
-              <div class="p-0.5 sm:p-1.5 bg-zinc-150 border border-theme text-black rounded hover:bg-zinc-200 transition-colors flex items-center justify-center">
-                <i data-lucide="plus" class="w-2 h-2 sm:w-3.5 sm:h-3.5"></i>
+              <h3 class="font-bold text-[7px] sm:text-xs line-clamp-2 min-h-[20px] sm:min-h-[34px] text-black leading-tight">${item.name}</h3>
+              ${item.barcode ? `<span class="text-[5px] sm:text-[8px] text-muted font-mono flex items-center gap-0.5 mt-0.5 truncate"><i data-lucide="barcode" class="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5"></i> ${item.barcode}</span>` : ''}
+              
+              <div class="mt-auto pt-1 sm:pt-2.5 border-t border-theme flex items-center justify-between gap-0.5">
+                <div>
+                  <p class="text-[7px] sm:text-xs font-black font-mono text-black">${item.sellPrice.toFixed(2)}</p>
+                </div>
+                <div class="p-0.5 sm:p-1.5 bg-zinc-150 border border-theme text-black rounded hover:bg-zinc-200 transition-colors flex items-center justify-center">
+                  <i data-lucide="plus" class="w-2 h-2 sm:w-3.5 sm:h-3.5"></i>
+                </div>
               </div>
             </div>
-          </div>
-        `;
+          `;
 
-        grid.appendChild(card);
+          grid.appendChild(card);
+        });
       });
       lucide.createIcons();
     }
@@ -2968,16 +2985,149 @@
 
 
     // ==========================================
-    // 8. PRINT & EXPORT ENGINE
+    // 8. PRINT & EXPORT ENGINE (Native + Bluetooth)
     // ==========================================
     
-    // --- NATIVE MINI RECEIPT PRINT ---
     function triggerReceiptPrint() {
       if (cart.length === 0) {
         showCustomAlert("The active ticket is empty.", "Print Error");
         return;
       }
+      
+      showCustomConfirm(
+        "Choose your printing method. Bluetooth is recommended for mobile thermal receipt printers.", 
+        () => { printReceiptBluetooth(); }, 
+        "Select Print Method",
+        "Bluetooth Thermal",
+        "Standard (PC/Web)",
+        () => { triggerReceiptPrintNative(); }
+      );
+    }
 
+    // --- BLUETOOTH THERMAL PRINTER INTEGRATION ---
+    async function printReceiptBluetooth() {
+      if (!navigator.bluetooth) {
+        showCustomAlert("Web Bluetooth is not supported on this browser or device. Try using Chrome for Android, or fallback to the Standard print method.", "Bluetooth Unavailable");
+        triggerReceiptPrintNative();
+        return;
+      }
+
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb', // Typical ESC/POS Printer
+            'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // Generic Thermal Base
+            '000018f0-0000-1000-8000-00805f9b34fa'
+          ]
+        });
+
+        showNotification("Connecting to Printer...");
+        const server = await device.gatt.connect();
+        const services = await server.getPrimaryServices();
+        let printChar = null;
+
+        for (let service of services) {
+          const chars = await service.getCharacteristics();
+          for (let char of chars) {
+            if (char.properties.write || char.properties.writeWithoutResponse) {
+              printChar = char;
+              break;
+            }
+          }
+          if (printChar) break;
+        }
+
+        if (!printChar) throw new Error("Writable print characteristic not found.");
+
+        const buffer = generateEscPosBuffer();
+        const CHUNK_SIZE = 100;
+        
+        for (let i = 0; i < buffer.length; i += CHUNK_SIZE) {
+          const chunk = buffer.slice(i, i + CHUNK_SIZE);
+          await printChar.writeValue(chunk);
+        }
+
+        showNotification("Receipt successfully printed via Bluetooth!");
+        device.gatt.disconnect();
+      } catch (err) {
+        console.error("Bluetooth print failed:", err);
+        if (err.name !== 'NotFoundError') {
+          showCustomAlert("Failed to connect or print via Bluetooth: " + err.message, "Bluetooth Error");
+        }
+      }
+    }
+
+    function generateEscPosBuffer() {
+      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Shop Branch', type: 'General' };
+      const receiptId = 'REC-' + Math.floor(Math.random() * 900000 + 100000);
+      const subtotal = cart.reduce((sum, item) => sum + (item.sellPrice * item.qtySelected), 0);
+      const stamps = getSystemTimestamp();
+
+      const ESC = 0x1B;
+      const GS = 0x1D;
+      const LF = 0x0A;
+      let data = [];
+      
+      const add = (arr) => data.push(...arr);
+      const addStr = (str) => {
+          const encoder = new TextEncoder();
+          const bytes = encoder.encode(str);
+          for(let i=0; i<bytes.length; i++) data.push(bytes[i]);
+      };
+
+      add([ESC, 0x40]); // Init
+      add([ESC, 0x61, 0x01]); // Align Center
+      add([ESC, 0x45, 0x01]); // Bold On
+      add([GS, 0x21, 0x00]); // Normal text size
+      addStr(activeBiz.name.toUpperCase() + "\n");
+      
+      add([ESC, 0x45, 0x00]); // Bold Off
+      addStr("Segment: " + activeBiz.type + "\n");
+      add([LF]);
+
+      add([ESC, 0x61, 0x00]); // Align Left
+      addStr("RECEIPT NO: " + receiptId + "\n");
+      addStr("DATE: " + stamps + "\n");
+      addStr("PAYMENT: " + paymentMethod + "\n");
+      add([LF]);
+
+      // 32 Char width for standard 58mm printer
+      addStr("--------------------------------\n");
+      addStr("ITEM                 AMT\n");
+      addStr("--------------------------------\n");
+
+      cart.forEach(item => {
+          let name = item.name.substring(0, 20);
+          let total = (item.sellPrice * item.qtySelected).toFixed(2);
+          let spaces = 32 - name.length - total.length;
+          if (spaces < 1) spaces = 1;
+          let line = name + " ".repeat(spaces) + total;
+          addStr(line + "\n");
+          addStr(`  ${item.qtySelected} x ${item.sellPrice.toFixed(2)}\n`);
+      });
+
+      addStr("--------------------------------\n");
+      add([ESC, 0x61, 0x02]); // Align Right
+      addStr("SUBTOTAL: " + subtotal.toFixed(2) + "\n");
+      add([ESC, 0x45, 0x01]); // Bold On
+      addStr("TOTAL:    " + subtotal.toFixed(2) + "\n");
+      add([ESC, 0x45, 0x00]); // Bold Off
+      add([LF]);
+
+      add([ESC, 0x61, 0x01]); // Align Center
+      addStr("Thank you for shopping!\n");
+      addStr("OnyxPOS Manager Systems\n");
+      add([LF, LF, LF, LF]); // Extra paper feed for easy tear
+      
+      // Cut paper (ignored gracefully if not supported by mobile printer)
+      add([GS, 0x56, 0x41, 0x10]); 
+
+      return new Uint8Array(data);
+    }
+
+    // --- NATIVE MINI RECEIPT PRINT ---
+    function triggerReceiptPrintNative() {
       const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Shop Branch', type: 'General' };
       const receiptId = 'REC-' + Math.floor(Math.random() * 900000 + 100000);
       const subtotal = cart.reduce((sum, item) => sum + (item.sellPrice * item.qtySelected), 0);
@@ -3079,17 +3229,28 @@
         // Conditionals per tab
         if (reportType === 'register') {
           const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
-          doc.autoTable({
-            startY: finalY,
-            headStyles: { fillColor: [0, 0, 0] },
-            head: [['Product Name', 'Category', 'Unit Cost', 'Retail Price', 'In Stock']],
-            body: items.map(i => [
-              i.name, 
-              i.category, 
-              i.costPrice.toFixed(2), 
-              i.sellPrice.toFixed(2), 
-              i.quantity
-            ])
+          const categories = [...new Set(items.map(i => i.category))].sort();
+
+          categories.forEach(cat => {
+            const catItems = items.filter(i => i.category === cat);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(30);
+            doc.text(`Category: ${cat}`, 14, finalY);
+            finalY += 5;
+
+            doc.autoTable({
+              startY: finalY,
+              headStyles: { fillColor: [0, 0, 0] },
+              head: [['Product Name', 'Unit Cost', 'Retail Price', 'In Stock']],
+              body: catItems.map(i => [
+                i.name, 
+                i.costPrice.toFixed(2), 
+                i.sellPrice.toFixed(2), 
+                i.quantity
+              ])
+            });
+            finalY = doc.lastAutoTable.finalY + 10;
           });
         } 
         
@@ -3101,19 +3262,29 @@
           doc.setFont("helvetica", "bold");
           doc.text(`Total Asset Stock Value: ${totalStockValue.toFixed(2)}`, 14, finalY);
           doc.text(`Expected Retail Yield: ${totalRetailVal.toFixed(2)}`, 100, finalY);
-          finalY += 8;
+          finalY += 12;
 
-          doc.autoTable({
-            startY: finalY,
-            headStyles: { fillColor: [0, 0, 0] },
-            head: [['Catalog ID / Name', 'Category', 'Cost Price', 'Retail Price', 'Stock Level']],
-            body: items.map(i => [
-              `${i.name}\n(SKU: ${i.barcode || 'N/A'})`, 
-              i.category, 
-              i.costPrice.toFixed(2), 
-              i.sellPrice.toFixed(2), 
-              i.quantity
-            ])
+          const categories = [...new Set(items.map(i => i.category))].sort();
+          categories.forEach(cat => {
+            const catItems = items.filter(i => i.category === cat);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(50);
+            doc.text(`Section: ${cat}`, 14, finalY);
+            finalY += 4;
+
+            doc.autoTable({
+              startY: finalY,
+              headStyles: { fillColor: [0, 0, 0] },
+              head: [['Catalog ID / Name', 'Cost Price', 'Retail Price', 'Stock Level']],
+              body: catItems.map(i => [
+                `${i.name}\n(SKU: ${i.barcode || 'N/A'})`, 
+                i.costPrice.toFixed(2), 
+                i.sellPrice.toFixed(2), 
+                i.quantity
+              ])
+            });
+            finalY = doc.lastAutoTable.finalY + 10;
           });
         }
         

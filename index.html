@@ -24,6 +24,10 @@
   
   <!-- HTML5 QR Code Scanner Library for Camera Barcode Scanning -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <!-- jsPDF & AutoTable for Reliable Mobile PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   
   <script>
     tailwind.config = {
@@ -79,7 +83,7 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    /* Strictly Hide print headers/footers URL natively */
+    /* Strictly Hide print headers/footers URL natively for Receipts */
     @media print {
       @page {
         margin: 0mm;
@@ -123,10 +127,10 @@
   <!-- ========================================== -->
   <!-- MOBILE HEADER -->
   <!-- ========================================== -->
-  <div class="lg:hidden w-full panel-card border-b border-theme p-5 flex items-center justify-between z-30 sticky top-0">
+  <div class="lg:hidden w-full panel-card border-b border-theme p-5 flex items-center justify-between z-30 sticky top-0 shadow-sm">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 flex items-center justify-center overflow-hidden">
-        <img src="icon.png" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\'><rect width=\'20\' height=\'12\' x=\'2\' y=\'10\' rx=\'2\'/><path d=\'M12 2 2 7h20L12 2Z\'/></svg>'" class="w-full h-full object-contain" alt="OnyxPOS Logo">
+      <div class="w-10 h-10 flex items-center justify-center overflow-hidden bg-black text-white rounded-xl font-bold">
+        OP
       </div>
       <div>
         <h1 class="font-extrabold text-base tracking-tight text-black">OnyxPOS</h1>
@@ -143,12 +147,12 @@
   <!-- ========================================== -->
   <!-- SIDEBAR (Desktop & Mobile Drawer) -->
   <!-- ========================================== -->
-  <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 lg:static w-72 panel-card border-r border-theme flex flex-col shrink-0 z-40 transition-transform duration-350 ease-in-out h-screen">
+  <aside id="sidebar" class="fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 lg:static w-72 panel-card border-r border-theme flex flex-col shrink-0 z-40 transition-transform duration-350 ease-in-out h-screen shadow-2xl lg:shadow-none">
     
     <!-- Header Block (Desktop Only) -->
     <div class="hidden lg:flex p-6 border-b border-theme items-center gap-3">
-      <div class="w-12 h-12 flex items-center justify-center overflow-hidden shrink-0">
-        <img src="icon.png" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\'><rect width=\'20\' height=\'12\' x=\'2\' y=\'10\' rx=\'2\'/><path d=\'M12 2 2 7h20L12 2Z\'/></svg>'" class="w-full h-full object-contain" alt="OnyxPOS Logo">
+      <div class="w-12 h-12 flex items-center justify-center overflow-hidden shrink-0 bg-black text-white rounded-2xl font-black text-xl shadow-md">
+        OP
       </div>
       <div>
         <h1 class="font-extrabold text-lg tracking-tight text-black">OnyxPOS</h1>
@@ -189,6 +193,11 @@
         <span>Cashier Checkout</span>
       </button>
 
+      <button onclick="switchTab('cashdesk')" id="nav-cashdesk" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
+        <i data-lucide="banknote" class="w-4 h-4"></i>
+        <span>Cash Desk / Register</span>
+      </button>
+
       <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="package" class="w-4 h-4"></i>
         <span>Stock Manager</span>
@@ -212,14 +221,6 @@
 
     <!-- Sidebar Footer Actions & Watermark -->
     <div class="p-5 mt-auto space-y-6">
-      <div class="text-center opacity-40 hover:opacity-100 transition-opacity pb-2">
-        <span class="text-[9px] font-bold text-muted uppercase tracking-widest leading-relaxed inline-block">
-          Made by Asim Lone<br/>
-          <a href="https://www.alfatehcreative.agency" target="_blank" class="hover:text-black transition-colors underline">@alfatehcreatives</a>
-        </span>
-      </div>
-
-      <!-- Hard Reset Database -->
       <button onclick="triggerHardResetConfirmation()" title="Wipe database & restart fresh" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all text-vibrantRed bg-vibrantRed/10 hover:bg-vibrantRed/20 border border-vibrantRed/20">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
         <span>Wipe Database</span>
@@ -236,7 +237,7 @@
   <main class="flex-1 flex flex-col overflow-hidden min-w-0">
     
     <!-- Top Header Bar (Unified) -->
-    <header class="panel-card border-b border-theme px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
+    <header class="panel-card border-b border-theme px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0 shadow-sm z-10">
       <div>
         <h2 id="activeTabTitle" class="text-xl lg:text-2xl font-black tracking-tight text-black">Cashier Checkout</h2>
         <p class="text-xs text-muted mt-0.5">
@@ -246,7 +247,7 @@
 
       <div class="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-end">
         <!-- Live Clock -->
-        <div class="px-3.5 py-1.5 bg-zinc-100 border border-theme rounded-[16px] text-xs font-bold flex items-center gap-2 text-black">
+        <div class="px-3.5 py-1.5 bg-zinc-100 border border-theme rounded-[16px] text-xs font-bold flex items-center gap-2 text-black shadow-inner">
           <i data-lucide="calendar" class="w-4 h-4 text-muted"></i>
           <span id="currentSystemTime">--:--</span>
         </div>
@@ -297,8 +298,8 @@
               </button>
             </div>
 
-            <!-- Core Grid Container: Compact 5 Columns for both Mobile and Large displays -->
-            <div id="registerItemGrid" class="grid grid-cols-5 gap-1.5 sm:gap-3">
+            <!-- Core Grid Container -->
+            <div id="registerItemGrid" class="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
               <!-- Dynamically populated register items -->
             </div>
           </div>
@@ -314,8 +315,8 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <!-- DIRECT CART SCAN BUTTON -->
-                  <button onclick="startBarcodeScan('directCart')" class="px-4 py-2 bg-black text-white hover:bg-zinc-800 rounded-xl flex items-center justify-center gap-2 text-xs font-bold shadow-lg transition-all" title="Scan Barcode to Add to Cart">
-                    <i data-lucide="scan-barcode" class="w-4 h-4"></i> Add via Scan
+                  <button onclick="startBarcodeScan('directCart')" class="px-3 py-2 bg-black text-white hover:bg-zinc-800 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold shadow-lg transition-all" title="Scan Barcode to Add to Cart">
+                    <i data-lucide="scan-barcode" class="w-4 h-4"></i> Scan
                   </button>
                   <span id="cartCountBadge" class="px-2.5 py-1 bg-zinc-200 rounded-full text-[10px] font-extrabold text-black hidden sm:inline-block">
                     0 Items
@@ -333,7 +334,7 @@
                 <div>
                   <label class="block text-[10px] text-muted font-black uppercase tracking-wider mb-2">Payment Option</label>
                   <div class="grid grid-cols-3 gap-2">
-                    <button onclick="setPaymentMethod('Cash')" id="btn-pay-cash" class="py-2.5 bg-black text-white rounded-xl text-xs font-black border border-transparent transition-all">Cash</button>
+                    <button onclick="setPaymentMethod('Cash')" id="btn-pay-cash" class="py-2.5 bg-black text-white rounded-xl text-xs font-black border border-transparent transition-all shadow-md">Cash</button>
                     <button onclick="setPaymentMethod('Card')" id="btn-pay-card" class="py-2.5 bg-zinc-150 text-muted hover:text-black rounded-xl text-xs font-bold border border-theme transition-all">Card</button>
                     <button onclick="setPaymentMethod('Credit')" id="btn-pay-credit" class="py-2.5 bg-zinc-150 text-muted hover:text-black rounded-xl text-xs font-bold border border-theme transition-all">Credit</button>
                   </div>
@@ -387,7 +388,95 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- 2. TAB: INVENTORY / VAULT -->
+      <!-- 2. TAB: CASH DESK (NEW) -->
+      <!-- ========================================== -->
+      <div id="tab-cashdesk" class="tab-pane hidden">
+        <div class="space-y-6">
+          
+          <div class="panel-card p-4 rounded-[22px] border border-theme flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white">
+                <i data-lucide="wallet" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-black text-sm uppercase text-black tracking-tight">Daily Cash Register</h3>
+                <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Manage Drawer Balance</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-[11px] text-muted font-bold">Log Date:</span>
+              <input type="date" id="cashDeskFilterDate" onchange="renderCashDesk()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black font-mono font-bold" />
+              <button onclick="document.getElementById('cashDeskFilterDate').value = ''; renderCashDesk();" class="p-1 text-muted hover:text-black"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+
+          <!-- Drawer Summaries -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="panel-card border border-theme rounded-[22px] p-5 md:col-span-2 bg-black text-white shadow-lg relative overflow-hidden">
+              <div class="absolute -right-6 -top-6 opacity-10">
+                <i data-lucide="banknote" class="w-40 h-40"></i>
+              </div>
+              <span class="text-[10px] text-zinc-400 uppercase tracking-wider font-extrabold block relative z-10">Current Drawer Cash</span>
+              <div class="mt-2 relative z-10 flex justify-between items-end">
+                <p id="deskDrawerBalance" class="text-4xl font-black font-mono">0.00</p>
+                <button onclick="exportViewToPDF('cashdesk', 'Daily Cash Register')" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all">
+                   <i data-lucide="download" class="w-3 h-3"></i> PDF Log
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-card border border-theme rounded-[22px] p-5 flex flex-col justify-center">
+              <span class="text-[10px] text-muted uppercase tracking-wider font-extrabold block">Total Cash In (Sales + Income)</span>
+              <p id="deskTotalIn" class="text-xl font-black text-vibrantGreen font-mono mt-1">0.00</p>
+            </div>
+
+            <div class="panel-card border border-theme rounded-[22px] p-5 flex flex-col justify-center">
+              <span class="text-[10px] text-muted uppercase tracking-wider font-extrabold block">Total Cash Out (Expenses)</span>
+              <p id="deskTotalOut" class="text-xl font-black text-vibrantRed font-mono mt-1">0.00</p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="openCashModal('Opening')" class="px-4 py-2.5 bg-zinc-100 border border-theme text-black font-bold rounded-xl text-xs flex items-center gap-2 hover:bg-zinc-200 transition-all">
+              <i data-lucide="sun" class="w-4 h-4"></i> Set Opening Balance
+            </button>
+            <button onclick="openCashModal('Income')" class="px-4 py-2.5 bg-vibrantGreen/10 border border-vibrantGreen/20 text-vibrantGreen font-bold rounded-xl text-xs flex items-center gap-2 hover:bg-vibrantGreen/20 transition-all">
+              <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i> Add Extra Income
+            </button>
+            <button onclick="openCashModal('Expense')" class="px-4 py-2.5 bg-vibrantRed/10 border border-vibrantRed/20 text-vibrantRed font-bold rounded-xl text-xs flex items-center gap-2 hover:bg-vibrantRed/20 transition-all">
+              <i data-lucide="arrow-up-from-line" class="w-4 h-4"></i> Register Expense (Bills/Rent)
+            </button>
+          </div>
+
+          <!-- Log Table -->
+          <div class="panel-card rounded-[22px] border border-theme overflow-hidden">
+            <div class="p-4 border-b border-theme bg-zinc-50">
+              <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">Log Activity</h4>
+            </div>
+            <!-- REMOVED overflow-x-auto & min-w to prevent scrolling and force wrapping -->
+            <div class="w-full">
+              <table class="w-full text-left border-collapse break-words whitespace-normal">
+                <thead>
+                  <tr class="bg-zinc-100 border-b border-theme">
+                    <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[20%]">Time / Date</th>
+                    <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[15%]">Type</th>
+                    <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[40%]">Description</th>
+                    <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-right w-[15%]">Amount</th>
+                    <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-right w-[10%]">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="cashDeskTableBody" class="divide-y divide-theme text-[8px] sm:text-xs text-black">
+                  <!-- Dynamic cash logs -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 3. TAB: INVENTORY / VAULT -->
       <!-- ========================================== -->
       <div id="tab-inventory" class="tab-pane hidden">
         <div class="space-y-4">
@@ -432,9 +521,9 @@
 
             <!-- Action buttons -->
             <div class="flex items-center gap-2 w-full md:w-auto">
-              <button onclick="exportViewToPDF('inventory', 'Inventory Report')" class="px-4 py-3 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black">
+              <button onclick="exportViewToPDF('inventory', 'Inventory Asset Report')" class="px-4 py-3 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black">
                 <i data-lucide="file-text" class="w-4 h-4"></i>
-                Export Report
+                Export PDF
               </button>
               <button onclick="openInventoryModal(false)" class="flex-1 md:flex-none px-5 py-3 bg-black text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
                 <i data-lucide="plus" class="w-4 h-4"></i>
@@ -446,20 +535,21 @@
 
           <!-- Main Inventory Board Table -->
           <div class="panel-card rounded-[22px] border border-theme overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse min-w-[800px]">
+            <!-- NO HORIZONTAL SCROLL: removed overflow-x-auto, min-w, and whitespace-nowrap -->
+            <div class="w-full">
+              <table class="w-full text-left border-collapse break-words whitespace-normal">
                 <thead>
                   <tr class="bg-zinc-100 border-b border-theme">
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Product Name / Barcode</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Category</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Purchase Cost</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Sale Price</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider text-center">In Stock</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider">Auto Stamps</th>
-                    <th class="p-4 text-[10px] font-bold text-muted uppercase tracking-wider text-right">Actions</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[25%]">Product Name / Barcode</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[15%]">Category</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-right w-[10%]">Cost</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-right w-[10%]">Sale Price</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-center w-[10%]">In Stock</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider hidden sm:table-cell w-[15%]">Timestamps</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-right w-[15%]">Actions</th>
                   </tr>
                 </thead>
-                <tbody id="inventoryTableBody" class="divide-y divide-theme text-xs text-black">
+                <tbody id="inventoryTableBody" class="divide-y divide-theme text-[8px] sm:text-xs text-black">
                   <!-- Dynamic inventory row entries -->
                 </tbody>
               </table>
@@ -470,14 +560,14 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- 3. TAB: CREDIT LEDGER -->
+      <!-- 4. TAB: CREDIT LEDGER -->
       <!-- ========================================== -->
       <div id="tab-credit" class="tab-pane hidden">
         <div class="space-y-6">
           
           <!-- Core Credit Dashboard Numbers -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between">
+            <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between shadow-sm">
               <div class="space-y-1">
                 <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">We Owe (Payables)</span>
                 <p id="totalPayableText" class="text-2xl font-black text-vibrantRed font-mono">0.00</p>
@@ -488,7 +578,7 @@
               </div>
             </div>
 
-            <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between">
+            <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between shadow-sm">
               <div class="space-y-1">
                 <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">Owed to Us (Receivables)</span>
                 <p id="totalReceivableText" class="text-2xl font-black text-vibrantGreen font-mono">0.00</p>
@@ -499,7 +589,7 @@
               </div>
             </div>
 
-            <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between">
+            <div class="panel-card border border-theme rounded-[22px] p-5 flex items-center justify-between shadow-sm">
               <div class="space-y-1">
                 <span class="text-[10px] text-muted uppercase tracking-wider font-bold block">Net Leverage Standing</span>
                 <p id="netLiquidityText" class="text-2xl font-black font-mono">0.00</p>
@@ -512,9 +602,21 @@
           </div>
 
           <!-- Controls panel with Date Range -->
-          <div class="panel-card p-4 rounded-[22px] border border-theme flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <h3 class="font-extrabold text-xs uppercase tracking-wider text-black">Ledger Logs</h3>
+          <div class="panel-card p-4 rounded-[22px] border border-theme flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              
+              <!-- SEARCH BAR FOR CREDIT -->
+              <div class="relative w-full sm:w-48 lg:w-64">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-3.5 h-3.5"></i>
+                <input 
+                  type="text" 
+                  id="creditSearchFilter" 
+                  oninput="renderCreditLedger()" 
+                  placeholder="Search Name..." 
+                  class="w-full bg-zinc-100 border border-theme rounded-lg py-1.5 pl-8 pr-3 text-xs text-black focus:outline-none"
+                />
+              </div>
+              
               <div class="flex items-center gap-2">
                 <span class="text-[11px] text-muted">From:</span>
                 <input type="date" id="creditFilterStart" onchange="renderCreditLedger()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
@@ -523,8 +625,8 @@
                 <button onclick="clearDateFilter('credit')" class="p-1 text-muted hover:text-black" title="Clear Date Filter"><i data-lucide="x" class="w-4 h-4"></i></button>
               </div>
             </div>
-            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-              <button onclick="exportViewToPDF('credit', 'Credit Ledger')" class="px-4 py-2.5 bg-zinc-100 border border-theme hover:bg-zinc-200 text-black rounded-xl text-xs font-bold flex items-center gap-1.5">
+            <div class="flex items-center gap-2 w-full lg:w-auto justify-end">
+              <button onclick="exportViewToPDF('credit', 'Credit Ledger Account Summary')" class="px-4 py-2.5 bg-zinc-100 border border-theme hover:bg-zinc-200 text-black rounded-xl text-xs font-bold flex items-center gap-1.5">
                 <i data-lucide="file-text" class="w-4 h-4"></i> Export PDF
               </button>
               <button onclick="openCreditModal()" class="px-4 py-2.5 bg-black text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md">
@@ -536,8 +638,8 @@
 
           <!-- Grouped Person Wise Credits List -->
           <div class="space-y-4">
-            <h4 class="font-extrabold text-sm uppercase text-black tracking-tight">Active Accounts Grouped by Client / Supplier</h4>
-            <div id="groupedCreditsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h4 class="font-extrabold text-sm uppercase text-black tracking-tight">Active Accounts Grouped</h4>
+            <div id="groupedCreditsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <!-- Dynamically populated group cards go here -->
             </div>
           </div>
@@ -546,7 +648,7 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- 4. TAB: PROFIT MARGIN CALCULATOR -->
+      <!-- 5. TAB: PROFIT MARGIN CALCULATOR -->
       <!-- ========================================== -->
       <div id="tab-calculator" class="tab-pane hidden">
         <div class="space-y-4">
@@ -559,8 +661,8 @@
               <input type="date" id="calcFilterEnd" onchange="renderRealizedMarginalStreams()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
               <button onclick="clearDateFilter('calc')" class="p-1 text-muted hover:text-black" title="Clear Date Filter"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <button onclick="exportViewToPDF('calculator', 'Profit Streams Report')" class="px-4 py-2 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black">
-              <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Export Margin Report
+            <button onclick="exportViewToPDF('calculator', 'Profit Streams & Margins')" class="px-4 py-2 bg-zinc-100 border border-theme hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-1.5 text-black">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Export Margin Report PDF
             </button>
           </div>
 
@@ -669,18 +771,19 @@
                 <p class="text-xs text-muted">Real-time profit tracking from cashier checkouts.</p>
               </div>
 
-              <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[500px]">
+              <!-- NO HORIZONTAL SCROLL: removed overflow-x-auto, min-w, and whitespace-nowrap -->
+              <div class="w-full">
+                <table class="w-full text-left border-collapse break-words whitespace-normal">
                   <thead>
                     <tr class="bg-zinc-100 border-b border-theme">
-                      <th class="p-3 text-[10px] font-bold text-muted uppercase">Timestamp</th>
-                      <th class="p-3 text-[10px] font-bold text-muted uppercase">Product Info</th>
-                      <th class="p-3 text-[10px] font-bold text-muted uppercase text-center">Qty Sold</th>
-                      <th class="p-3 text-[10px] font-bold text-muted uppercase">Margin</th>
-                      <th class="p-3 text-[10px] font-bold text-muted uppercase text-right">Realized Net Profit</th>
+                      <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase w-[15%]">Timestamp</th>
+                      <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase w-[35%]">Product Info</th>
+                      <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase text-center w-[15%]">Qty Sold</th>
+                      <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase w-[15%]">Margin</th>
+                      <th class="p-1 sm:p-3 text-[7px] sm:text-[10px] font-bold text-muted uppercase text-right w-[20%]">Realized Net Profit</th>
                     </tr>
                   </thead>
-                  <tbody id="realizedProfitLogs" class="divide-y divide-theme text-xs text-black">
+                  <tbody id="realizedProfitLogs" class="divide-y divide-theme text-[8px] sm:text-xs text-black">
                     <!-- Dynamic checkouts metrics stream -->
                   </tbody>
                 </table>
@@ -691,7 +794,7 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- 5. TAB: REPORTS -->
+      <!-- 6. TAB: REPORTS -->
       <!-- ========================================== -->
       <div id="tab-reports" class="tab-pane hidden">
         <div class="space-y-6">
@@ -740,9 +843,9 @@
               <input type="date" id="reportsFilterEnd" onchange="renderAnalyticsReports()" class="bg-zinc-100 border border-theme rounded-lg p-1.5 text-xs text-black" />
               <button onclick="clearDateFilter('reports')" class="p-1 text-muted hover:text-black" title="Clear Date Filter"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <button onclick="exportViewToPDF('reports', 'Business Reports')" class="px-5 py-2.5 bg-black text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center gap-1.5 hover:scale-105 transition-all">
-              <i data-lucide="printer" class="w-4 h-4"></i>
-              Download PDF Report
+            <button onclick="exportViewToPDF('reports', 'Business Reports & KPIs')" class="px-5 py-2.5 bg-black text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center gap-1.5 hover:scale-105 transition-all">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              Download PDF
             </button>
           </div>
 
@@ -775,15 +878,13 @@
 
                 <div class="grid grid-cols-2 gap-4">
                   <div class="bg-vibrantGreen/10 border border-vibrantGreen/20 p-3.5 rounded-xl">
-                    <span class="text-[9px] text-vibrantGreen uppercase font-black block">Receivables Allocation</span>
+                    <span class="text-[9px] text-vibrantGreen uppercase font-black block">Receivables</span>
                     <p id="riskCardReceivables" class="text-base font-black font-mono text-black">0.00</p>
-                    <span class="text-[9px] text-muted">Collectibles outstanding total</span>
                   </div>
 
                   <div class="bg-vibrantRed/10 border border-vibrantRed/20 p-3.5 rounded-xl">
-                    <span class="text-[9px] text-vibrantRed uppercase font-black block">Payables Allocation</span>
+                    <span class="text-[9px] text-vibrantRed uppercase font-black block">Payables</span>
                     <p id="riskCardPayables" class="text-base font-black font-mono text-black">0.00</p>
-                    <span class="text-[9px] text-muted">Liabilities we owe total</span>
                   </div>
                 </div>
               </div>
@@ -835,13 +936,13 @@
   <div id="modalBarcodeScan" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4 hidden">
     <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-4">
       <div class="flex justify-between items-center">
-        <h3 class="text-sm font-black tracking-wide uppercase text-black">Live Camera Barcode Scanner</h3>
+        <h3 class="text-sm font-black tracking-wide uppercase text-black">Live Scanner</h3>
         <button onclick="stopBarcodeScan()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <!-- HTML5 QR Scanner viewport placeholder -->
-      <div id="cameraScanViewport" class="w-full bg-zinc-100 rounded-2xl overflow-hidden border border-theme" style="min-height: 250px;"></div>
+      <div id="cameraScanViewport" class="w-full bg-black rounded-2xl overflow-hidden border border-theme flex items-center justify-center" style="min-height: 250px; aspect-ratio: 1/1;"></div>
       <p class="text-[10px] text-muted text-center leading-relaxed">Place product barcode inside camera frames to scan automatically.</p>
     </div>
   </div>
@@ -888,7 +989,48 @@
     </div>
   </div>
 
-  <!-- 2. MODAL: ADD/EDIT CATALOG PRODUCT -->
+  <!-- 2. MODAL: CASH DESK ENTRY -->
+  <div id="modalCashDesk" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+    <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-5">
+      <div class="flex justify-between items-center">
+        <h3 id="cashModalTitle" class="text-base font-black tracking-wide uppercase text-black">Cash Entry</h3>
+        <button onclick="closeCashModal()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
+          <i data-lucide="x" class="w-5 h-5 text-muted"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <input type="hidden" id="modalCashType" />
+        
+        <div>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Amount</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            id="modalCashAmount" 
+            placeholder="0.00" 
+            class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-semibold text-black focus:outline-none" 
+          />
+        </div>
+        
+        <div>
+          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Description / Reason</label>
+          <input 
+            type="text" 
+            id="modalCashDesc" 
+            placeholder="e.g. Shop Rent, Morning Float..." 
+            class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-semibold text-black focus:outline-none" 
+          />
+        </div>
+
+        <button onclick="saveCashEntry()" class="w-full py-3.5 bg-black text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg">
+          Save Cash Record
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MODAL: ADD/EDIT CATALOG PRODUCT -->
   <div id="modalInventory" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
     <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-5">
       <div class="flex justify-between items-center">
@@ -980,7 +1122,7 @@
     </div>
   </div>
 
-  <!-- 3. MODAL: ADD MANUAL CATEGORIES -->
+  <!-- 4. MODAL: ADD MANUAL CATEGORIES -->
   <div id="modalCategory" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
     <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-sm shadow-2xl relative space-y-5">
       <div class="flex justify-between items-center">
@@ -1017,7 +1159,7 @@
     </div>
   </div>
 
-  <!-- 4. MODAL: ADD MANUAL CREDIT ENTRY -->
+  <!-- 5. MODAL: ADD MANUAL CREDIT ENTRY -->
   <div id="modalCredit" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
     <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-md shadow-2xl relative space-y-5">
       <div class="flex justify-between items-center">
@@ -1108,10 +1250,11 @@
     let state = {
       businesses: [],
       currentBusinessId: '',
-      categories: [], // Shared categories catalog
-      inventory: [],  // [{id, businessId, name, barcode, category, costPrice, sellPrice, quantity, dateAdded, dateUpdated}]
-      credits: [],    // [{id, businessId, name, type, amount, desc, date, dueDate, status}]
-      sales: []       // [{id, businessId, itemName, category, costPrice, sellPrice, quantity, totalProfit, date}]
+      categories: [],
+      inventory: [],
+      credits: [],
+      sales: [],
+      cashLogs: [] // New: Cash desk tracking
     };
 
     let activeTab = 'register';
@@ -1120,9 +1263,9 @@
     let cart = [];
     let html5QrcodeScanner = null;
     let barcodeTargetInputId = null;
-    let isProcessingScan = false; // Debounce flag for camera scanner
-    let sessionScannedCodes = new Set(); // To prevent scanning same QR multiple times continuously
-
+    let isProcessingScan = false;
+    let sessionScannedCodes = new Set();
+    
     // Custom Modal Queue System Callback References
     let onConfirmProceedCallback = null;
 
@@ -1139,20 +1282,25 @@
       } else {
         renderGlobalContext();
       }
+      
+      // Default cash desk filter to today
+      const todayDate = new Date().toISOString().split('T')[0];
+      const cashFilter = document.getElementById('cashDeskFilterDate');
+      if (cashFilter) {
+        cashFilter.value = todayDate;
+      }
     };
 
-    // --- SOUND BEEP ENGINE (No more synth conflicts) ---
+    // --- SOUND BEEP ENGINE ---
     function safePlayBeep() {
       try {
         const beep = document.getElementById('scanBeep');
         if (beep) {
           beep.currentTime = 0;
-          beep.play().catch(() => {
-            // Silently ignore autoplay rejections so UI operations never halt
-          });
+          beep.play().catch(() => {});
         }
       } catch (e) {
-        console.warn('Beep error safely bypassed.');
+        // Silently catch beep errors
       }
     }
 
@@ -1162,7 +1310,7 @@
 
     function setupKeyboardBarcodeScanner() {
       document.addEventListener('keydown', function(e) {
-        // Handle explicit input focus interactions (if they manually scan while focused)
+        // Handle explicit input focus interactions
         if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
           if (document.activeElement.id === 'registerSearch' || document.activeElement.id === 'inventorySearch' || document.activeElement.id === 'modalInvBarcode') {
             if (e.key === 'Enter') {
@@ -1233,14 +1381,12 @@
         } else {
           // IF NOT FOUND IN CATALOG:
           if (activeTab === 'inventory') {
-            // Graceful non-blocking action inside stock vault: fill the search bar and filter to empty table
             safePlayBeep();
             const invSearch = document.getElementById('inventorySearch');
             if (invSearch) invSearch.value = barcode;
             renderInventoryTable();
             showNotification(`Barcode ${barcode} not found. Ready to register.`);
           } else {
-            // Cashier section error popup
             showCustomAlert(`Product with barcode "${barcode}" not found in your catalog. Please add it to the Stock Vault first.`, "Unknown Barcode");
           }
         }
@@ -1256,7 +1402,9 @@
         const pad = (num) => String(num).padStart(2, '0');
         const formatted = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
         const clockEl = document.getElementById('currentSystemTime');
-        if (clockEl) clockEl.innerText = formatted;
+        if (clockEl) {
+          clockEl.innerText = formatted;
+        }
       }
       tick();
       setInterval(tick, 1000);
@@ -1281,6 +1429,8 @@
       if (stored) {
         try {
           state = JSON.parse(stored);
+          // Initialize new properties if migrating from older version
+          state.cashLogs = state.cashLogs || [];
         } catch (e) {
           console.error("Critical database corruption on load.", e);
         }
@@ -1315,7 +1465,6 @@
       document.getElementById('modalAlert').classList.remove('hidden');
     }
 
-    // Close Custom Alert with focus restore
     function closeCustomAlert() {
       document.getElementById('modalAlert').classList.add('hidden');
     }
@@ -1347,16 +1496,6 @@
     function triggerHardResetConfirmation() {
       showCustomConfirm("Are you absolutely sure you want to completely wipe the entire POS database? This action is permanent.", function() {
         localStorage.removeItem('onyxpos_database_v3_premium');
-        state = {
-          businesses: [],
-          currentBusinessId: '',
-          categories: [],
-          inventory: [],
-          credits: [],
-          sales: []
-        };
-        cart = [];
-        saveStateToStorage();
         window.location.reload();
       }, "Hard Database Reset");
     }
@@ -1364,24 +1503,25 @@
     // --- CAMERA BARCODE SCANNER CORE ---
     function startBarcodeScan(inputId) {
       barcodeTargetInputId = inputId;
-      sessionScannedCodes.clear(); // Clear recent scans for "1 QR Scanned Only Once"
+      sessionScannedCodes.clear(); 
       document.getElementById('modalBarcodeScan').classList.remove('hidden');
       
       setTimeout(() => {
         try {
           html5QrcodeScanner = new Html5Qrcode("cameraScanViewport");
-          const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+          const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
+          
+          // Enhanced configuration to be more stable on mobile
+          const cameraConfig = { facingMode: "environment" };
           
           html5QrcodeScanner.start(
-            { facingMode: "environment" },
+            cameraConfig, 
             config,
             (decodedText) => {
               if (isProcessingScan) return;
               
               if (barcodeTargetInputId === 'directCart') {
-                // CONTINUOUS SCAN MODE FOR CHECKOUT
                 if (sessionScannedCodes.has(decodedText)) {
-                  // Prevent re-scanning the exact same code rapidly to satisfy "1 qr scanned only once"
                   return; 
                 }
                 sessionScannedCodes.add(decodedText);
@@ -1389,10 +1529,8 @@
 
                 processBarcodeAction(decodedText);
                 
-                // Do NOT close camera modal for directCart to allow continuous scanning
                 setTimeout(() => { isProcessingScan = false; }, 1000); 
               } else {
-                // SINGLE SCAN MODE FOR INVENTORY / OTHER INPUTS
                 isProcessingScan = true;
                 const targetEl = document.getElementById(barcodeTargetInputId);
                 if (targetEl) targetEl.value = decodedText;
@@ -1407,8 +1545,20 @@
               // Quiet frame reading fails logic
             }
           ).catch((err) => {
-            showCustomAlert("Could not access camera. Please verify your camera permissions.", "Scanner Error");
-            stopBarcodeScan();
+            // Fallback to automatic routing if environment explicitly fails on old phones
+            html5QrcodeScanner.start(
+              { facingMode: "user" }, 
+              config, 
+              (decodedText) => {
+                if (isProcessingScan) return;
+                processBarcodeAction(decodedText);
+                setTimeout(() => { stopBarcodeScan(); }, 500);
+              }, 
+              () => {}
+            ).catch(e => {
+              showCustomAlert("Could not access camera. Please verify your camera permissions in browser settings.", "Scanner Error");
+              stopBarcodeScan();
+            });
           });
         } catch (err) {
           showCustomAlert("Camera initialization failed.", "Scanner Error");
@@ -1421,7 +1571,7 @@
       document.getElementById('modalBarcodeScan').classList.add('hidden');
       if (html5QrcodeScanner) {
         const scannerRef = html5QrcodeScanner;
-        html5QrcodeScanner = null; // Decouple immediately to prevent loops
+        html5QrcodeScanner = null; 
         try {
           scannerRef.stop().then(() => {
             scannerRef.clear();
@@ -1476,11 +1626,9 @@
     function switchTab(targetTab) {
       activeTab = targetTab;
       
-      // Toggle CSS display across containers
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
       document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
 
-      // Update sidebar nav highlighting state classes
       document.querySelectorAll('nav mt-auto button, nav button').forEach(btn => {
         btn.className = "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black";
       });
@@ -1492,6 +1640,7 @@
 
       const titlesMap = {
         'register': 'Cashier Checkout',
+        'cashdesk': 'Daily Cash Desk',
         'inventory': 'Stock Manager',
         'credit': 'Customer & Credit Ledger',
         'calculator': 'Profit Margin Tool',
@@ -1512,6 +1661,8 @@
       if (activeTab === 'register') {
         renderRegisterGrid();
         renderCartBasket();
+      } else if (activeTab === 'cashdesk') {
+        renderCashDesk();
       } else if (activeTab === 'inventory') {
         renderInventoryTable();
       } else if (activeTab === 'credit') {
@@ -1695,7 +1846,7 @@
     }
 
     function triggerCategoryDeletion(cat) {
-      showCustomConfirm(`Are you sure you want to delete category "${cat}"? Products under this category will need manual updates.`, function() {
+      showCustomConfirm(`Are you sure you want to delete category "${cat}"?`, function() {
         state.categories = state.categories.filter(c => c !== cat);
         saveStateToStorage();
         rebuildCategoryDropdowns();
@@ -1863,22 +2014,28 @@
       }
 
       filtered.forEach(item => {
-        const row = document.createElement('tr');
-        row.className = "hover:bg-zinc-100 transition-colors";
-        row.innerHTML = `
-          <td class="p-4">
-            <div class="font-extrabold text-sm text-black">${item.name}</div>
-            <div class="text-[9px] text-muted font-mono flex items-center gap-1 mt-0.5">
-              <i data-lucide="barcode" class="w-3.5 h-3.5"></i> ${item.barcode || 'N/A'}
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-zinc-100 transition-colors";
+        tr.innerHTML = `
+          <td class="p-1 sm:p-4 align-top">
+            <div class="font-extrabold text-[8px] sm:text-sm text-black">${item.name}</div>
+            <div class="text-[7px] sm:text-[9px] text-muted font-mono flex items-center gap-1 mt-0.5">
+              <i data-lucide="barcode" class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"></i> ${item.barcode || 'N/A'}
             </div>
           </td>
-          <td class="p-4">
-            <span class="px-2.5 py-1 bg-zinc-200 text-black rounded-full text-[10px] font-bold border border-theme">${item.category}</span>
+          <td class="p-1 sm:p-4 align-top">
+            <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-zinc-200 text-black rounded-full text-[7px] sm:text-[10px] font-bold border border-theme inline-block">
+              ${item.category}
+            </span>
           </td>
-          <td class="p-4 font-mono font-semibold text-zinc-600">${item.costPrice.toFixed(2)}</td>
-          <td class="p-4 font-mono font-black text-black">${item.sellPrice.toFixed(2)}</td>
-          <td class="p-4 text-center">
-            <span class="px-2.5 py-1.5 rounded-xl text-xs font-black font-mono inline-block min-w-[50px] ${
+          <td class="p-1 sm:p-4 align-top text-right font-mono font-semibold text-zinc-600">
+            ${item.costPrice.toFixed(2)}
+          </td>
+          <td class="p-1 sm:p-4 align-top text-right font-mono font-black text-black">
+            ${item.sellPrice.toFixed(2)}
+          </td>
+          <td class="p-1 sm:p-4 align-top text-center">
+            <span class="px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[8px] sm:text-xs font-black font-mono inline-block min-w-[30px] sm:min-w-[50px] ${
               item.quantity === 0 ? 'bg-vibrantRed/10 text-vibrantRed border border-vibrantRed/20' :
               item.quantity <= 10 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
               'bg-vibrantGreen/10 text-vibrantGreen border border-vibrantGreen/20'
@@ -1886,30 +2043,25 @@
               ${item.quantity}
             </span>
           </td>
-          <td class="p-4 space-y-0.5">
-            <div class="text-[10px] text-muted flex items-center gap-1">
-              Created: ${item.dateAdded}
-            </div>
-            <div class="text-[10px] text-muted flex items-center gap-1">
-              Updated: ${item.dateUpdated}
-            </div>
+          <td class="p-1 sm:p-4 align-top space-y-0.5 hidden sm:table-cell">
+            <div class="text-[7px] sm:text-[10px] text-muted">Created: ${item.dateAdded}</div>
+            <div class="text-[7px] sm:text-[10px] text-muted">Updated: ${item.dateUpdated}</div>
           </td>
-          <td class="p-4 text-right">
+          <td class="p-1 sm:p-4 align-top text-right">
             <div class="flex items-center justify-end gap-1">
-              <button onclick="openInventoryModal(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="p-2 text-black hover:bg-zinc-200 rounded-xl transition-colors">
-                <i data-lucide="pencil" class="w-4 h-4"></i>
+              <button onclick='openInventoryModal(${JSON.stringify(item).replace(/'/g, "&#39;")})' class="p-1.5 sm:p-2 text-black hover:bg-zinc-200 rounded-lg sm:rounded-xl transition-colors">
+                <i data-lucide="pencil" class="w-3 h-3 sm:w-4 sm:h-4"></i>
               </button>
-              <button onclick="triggerInventoryDeletion('${item.id}')" class="p-2 hover:bg-vibrantRed/20 text-muted hover:text-vibrantRed rounded-xl transition-colors">
-                <i data-lucide="trash" class="w-4 h-4"></i>
+              <button onclick="triggerInventoryDeletion('${item.id}')" class="p-1.5 sm:p-2 hover:bg-vibrantRed/20 text-muted hover:text-vibrantRed rounded-lg sm:rounded-xl transition-colors">
+                <i data-lucide="trash" class="w-3 h-3 sm:w-4 sm:h-4"></i>
               </button>
             </div>
           </td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(tr);
       });
       lucide.createIcons();
     }
-
 
     // ==========================================
     // 4. POS CASHIER RECEIPT OPERATIONS
@@ -1964,7 +2116,7 @@
         const isLowStock = item.quantity <= 10 && !isOutOfStock;
 
         const card = document.createElement('div');
-        // Compact, beautifully aligned 5-column specs suitable for both mobile and desktop
+        // Compact alignment
         card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
           isOutOfStock 
             ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
@@ -2169,7 +2321,8 @@
           sellPrice: c.sellPrice,
           quantity: c.qtySelected,
           totalProfit: parseFloat(itemProfit.toFixed(2)),
-          date: stamps
+          date: stamps,
+          paymentMethod: paymentMethod // Tracked for Cash Desk
         };
         state.sales.push(saleRecord);
 
@@ -2194,6 +2347,164 @@
       
       showNotification("Checkout Transaction Saved Successfully!");
       renderActiveTabData();
+    }
+
+    // ==========================================
+    // NEW: CASH DESK LOGIC
+    // ==========================================
+    function openCashModal(type) {
+      document.getElementById('modalCashType').value = type;
+      
+      let title = "";
+      if (type === 'Opening') title = "Set Opening Balance";
+      else if (type === 'Income') title = "Add Manual Income";
+      else if (type === 'Expense') title = "Register Manual Expense";
+      
+      document.getElementById('cashModalTitle').innerText = title;
+      document.getElementById('modalCashDesk').classList.remove('hidden');
+    }
+    
+    function closeCashModal() {
+      document.getElementById('modalCashDesk').classList.add('hidden');
+      document.getElementById('modalCashAmount').value = '';
+      document.getElementById('modalCashDesc').value = '';
+    }
+
+    function saveCashEntry() {
+      const type = document.getElementById('modalCashType').value;
+      const amount = parseFloat(document.getElementById('modalCashAmount').value) || 0;
+      const desc = document.getElementById('modalCashDesc').value.trim() || type;
+      
+      if(amount <= 0) { 
+        showCustomAlert("Please enter a valid positive amount.", "Validation Error"); 
+        return; 
+      }
+      
+      const stamps = getSystemTimestamp();
+      const entry = {
+        id: 'cash_' + Date.now(),
+        businessId: state.currentBusinessId,
+        type: type,
+        amount: amount,
+        desc: desc,
+        date: stamps
+      };
+      
+      state.cashLogs.push(entry);
+      
+      saveStateToStorage();
+      closeCashModal();
+      showNotification(`${type} Entry Saved.`);
+      renderCashDesk();
+    }
+
+    function removeCashEntry(id) {
+      showCustomConfirm("Delete this cash log?", () => {
+        state.cashLogs = state.cashLogs.filter(c => c.id !== id);
+        saveStateToStorage(); 
+        renderCashDesk(); 
+        showNotification("Cash entry deleted.");
+      });
+    }
+
+    function renderCashDesk() {
+      const container = document.getElementById('cashDeskTableBody');
+      container.innerHTML = '';
+      const filterDateStr = document.getElementById('cashDeskFilterDate').value;
+      
+      // Filter out only active business logs and sales
+      const logs = state.cashLogs.filter(c => c.businessId === state.currentBusinessId);
+      const sales = state.sales.filter(s => s.businessId === state.currentBusinessId && s.paymentMethod === 'Cash');
+      
+      const filteredLogs = filterDataByDateRange(logs, filterDateStr, filterDateStr);
+      const filteredSales = filterDataByDateRange(sales, filterDateStr, filterDateStr);
+
+      let openingBalance = 0;
+      let totalCashSales = 0;
+      let totalIncome = 0;
+      let totalExpenses = 0;
+
+      let combinedStream = [];
+      filteredLogs.forEach(l => {
+        combinedStream.push({ ...l, isSale: false });
+        if(l.type === 'Opening') openingBalance += l.amount;
+        if(l.type === 'Income') totalIncome += l.amount;
+        if(l.type === 'Expense') totalExpenses += l.amount;
+      });
+
+      filteredSales.forEach(s => {
+        const rev = s.sellPrice * s.quantity;
+        totalCashSales += rev;
+        combinedStream.push({ 
+          id: s.id, 
+          type: 'Sale', 
+          amount: rev, 
+          desc: `Cash Sale: ${s.quantity}x ${s.itemName}`, 
+          date: s.date, 
+          isSale: true 
+        });
+      });
+
+      combinedStream.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+      const drawerBalance = openingBalance + totalIncome + totalCashSales - totalExpenses;
+      document.getElementById('deskDrawerBalance').innerText = drawerBalance.toFixed(2);
+      document.getElementById('deskTotalIn').innerText = (totalIncome + totalCashSales).toFixed(2);
+      document.getElementById('deskTotalOut').innerText = totalExpenses.toFixed(2);
+
+      if (combinedStream.length === 0) {
+        container.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-8 text-center text-muted">
+              <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2"></i>
+              No cash activities for this date.
+            </td>
+          </tr>
+        `;
+      } else {
+        combinedStream.forEach(item => {
+          let typeColors = '';
+          let sign = '+';
+          if(item.type === 'Opening') { 
+            typeColors = 'bg-black text-white'; sign = ''; 
+          }
+          else if(item.type === 'Expense') { 
+            typeColors = 'bg-vibrantRed/10 text-vibrantRed border border-vibrantRed/20'; sign = '-'; 
+          }
+          else if(item.type === 'Sale' || item.type === 'Income') { 
+            typeColors = 'bg-vibrantGreen/10 text-vibrantGreen border border-vibrantGreen/20'; sign = '+'; 
+          }
+
+          container.innerHTML += `
+            <tr class="hover:bg-zinc-100 transition-colors">
+              <td class="p-1 sm:p-3 align-top text-[7px] sm:text-[10px] text-muted font-mono">
+                ${item.date}
+              </td>
+              <td class="p-1 sm:p-3 align-top">
+                <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[6px] sm:text-[9px] font-bold uppercase inline-block ${typeColors}">
+                  ${item.type}
+                </span>
+              </td>
+              <td class="p-1 sm:p-3 align-top text-[8px] sm:text-xs font-bold text-black">
+                ${item.desc}
+              </td>
+              <td class="p-1 sm:p-3 align-top text-right font-mono font-bold text-[8px] sm:text-xs ${item.type === 'Expense' ? 'text-vibrantRed' : 'text-vibrantGreen'}">
+                ${sign}${item.amount.toFixed(2)}
+              </td>
+              <td class="p-1 sm:p-3 align-top text-right">
+                ${!item.isSale ? `
+                  <button onclick="removeCashEntry('${item.id}')" class="p-1 hover:bg-vibrantRed/10 text-muted hover:text-vibrantRed rounded transition-colors">
+                    <i data-lucide="trash" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+                  </button>
+                ` : `
+                  <span class="text-[6px] sm:text-[9px] text-muted italic">Auto</span>
+                `}
+              </td>
+            </tr>
+          `;
+        });
+      }
+      lucide.createIcons();
     }
 
 
@@ -2266,7 +2577,6 @@
       showNotification("Account Entry Updated.");
     }
 
-    // Deletes credit entries
     function triggerCreditDeletion(id) {
       showCustomConfirm("Delete this credit entry permanently?", function() {
         state.credits = state.credits.filter(c => c.id !== id);
@@ -2276,15 +2586,14 @@
       }, "Remove Ledger Log");
     }
 
-    // Helper to group credits by Counterparty
     function getGroupedCredits(creditsList) {
       const grouped = {};
       creditsList.forEach(c => {
         if (!grouped[c.name]) {
           grouped[c.name] = {
             name: c.name,
-            totalOwedToUs: 0, // receivables (owe_us)
-            totalWeOwe: 0,     // payables (we_owe)
+            totalOwedToUs: 0, 
+            totalWeOwe: 0,     
             entries: []
           };
         }
@@ -2304,7 +2613,7 @@
       if (!startVal && !endVal) return list;
       return list.filter(item => {
         if (!item.date) return true;
-        const itemDateStr = item.date.split(' ')[0]; // extracts YYYY-MM-DD
+        const itemDateStr = item.date.split(' ')[0];
         const itemTime = new Date(itemDateStr).getTime();
         const startTime = startVal ? new Date(startVal).getTime() : 0;
         const endTime = endVal ? new Date(endVal).getTime() : Infinity;
@@ -2316,9 +2625,8 @@
       const gridContainer = document.getElementById('groupedCreditsGrid');
       gridContainer.innerHTML = '';
 
-      const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
+      let credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
       
-      // Calculate overall stats on pending entries (Unfiltered)
       let weOweTotal = 0;
       let oweUsTotal = 0;
 
@@ -2336,6 +2644,15 @@
       const netEl = document.getElementById('netLiquidityText');
       netEl.innerText = `${netPosition >= 0 ? '+' : ''}${netPosition.toFixed(2)}`;
       netEl.className = netPosition >= 0 ? "text-2xl font-black text-vibrantGreen font-mono" : "text-2xl font-black text-vibrantRed font-mono";
+
+      // Apply search filter if present
+      const searchStr = document.getElementById('creditSearchFilter').value.toLowerCase();
+      if(searchStr) {
+        credits = credits.filter(c => 
+          c.name.toLowerCase().includes(searchStr) || 
+          c.desc.toLowerCase().includes(searchStr)
+        );
+      }
 
       // Apply date filters if they are present
       const startVal = document.getElementById('creditFilterStart').value;
@@ -2455,7 +2772,6 @@
     }
 
     function updateSandboxEstimations() {
-      const label = document.getElementById('calcLabel').value || "Quick Estimation sandbox";
       const cost = parseFloat(document.getElementById('calcCost').value) || 0;
       const sell = parseFloat(document.getElementById('calcSell').value) || 0;
       const qty = Math.max(1, parseInt(document.getElementById('calcQty').value) || 1);
@@ -2512,18 +2828,24 @@
         const tr = document.createElement('tr');
         tr.className = "hover:bg-zinc-100 transition-all border-b border-theme/50 last:border-0";
         tr.innerHTML = `
-          <td class="p-3 font-mono text-[10px] text-muted">${s.date}</td>
-          <td class="p-3">
-            <div class="font-extrabold text-xs text-black">${s.itemName}</div>
-            <span class="text-[9px] text-muted uppercase font-semibold">${s.category}</span>
+          <td class="p-1 sm:p-3 align-top font-mono text-[7px] sm:text-[10px] text-muted w-[15%]">
+            ${s.date}
           </td>
-          <td class="p-3 text-center font-bold font-mono text-black">${s.quantity}</td>
-          <td class="p-3">
-            <span class="px-2 py-0.5 bg-zinc-200 border border-theme text-black rounded text-[9px] font-extrabold font-mono">${marginPercent}%</span>
+          <td class="p-1 sm:p-3 align-top w-[35%]">
+            <div class="font-extrabold text-[8px] sm:text-xs text-black">${s.itemName}</div>
+            <span class="text-[6px] sm:text-[9px] text-muted uppercase font-semibold block mt-0.5">${s.category}</span>
           </td>
-          <td class="p-3 text-right">
-            <p class="font-black text-vibrantGreen font-mono text-xs">+${itemProfit.toFixed(2)}</p>
-            <p class="text-[9px] text-muted font-mono">Cost: ${(s.costPrice * s.quantity).toFixed(2)}</p>
+          <td class="p-1 sm:p-3 align-top text-center font-bold font-mono text-[8px] sm:text-xs text-black w-[15%]">
+            ${s.quantity}
+          </td>
+          <td class="p-1 sm:p-3 align-top w-[15%]">
+            <span class="px-1.5 py-0.5 bg-zinc-200 border border-theme text-black rounded text-[6px] sm:text-[9px] font-extrabold font-mono inline-block">
+              ${marginPercent}%
+            </span>
+          </td>
+          <td class="p-1 sm:p-3 align-top text-right w-[20%]">
+            <p class="font-black text-vibrantGreen font-mono text-[8px] sm:text-xs">+${itemProfit.toFixed(2)}</p>
+            <p class="text-[6px] sm:text-[9px] text-muted font-mono block mt-0.5">Cost: ${(s.costPrice * s.quantity).toFixed(2)}</p>
           </td>
         `;
         container.appendChild(tr);
@@ -2646,10 +2968,10 @@
 
 
     // ==========================================
-    // 8. PRINT & EXPORT ENGINE (RECIPIENTS & PDF)
+    // 8. PRINT & EXPORT ENGINE
     // ==========================================
     
-    // --- PRINT DETAILED CHECKOUT RECEIPT (THERMAL PRINTER COMPATIBLE) ---
+    // --- NATIVE MINI RECEIPT PRINT ---
     function triggerReceiptPrint() {
       if (cart.length === 0) {
         showCustomAlert("The active ticket is empty.", "Print Error");
@@ -2716,400 +3038,212 @@
         </div>
       `;
 
-      executePrintJob(receiptHTML);
-    }
-
-    // --- FORMAL COMPREHENSIVE PDF REPORT GENERATION ENGINE ---
-    function exportViewToPDF(reportType, titleLabel) {
-      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Store Branch', type: 'General' };
-      const stamps = getSystemTimestamp();
-      
-      let tableContentHTML = '';
-      let dateRangeSubtitle = 'Complete Ledger Report';
-
-      if (reportType === 'register') {
-        const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
-        tableContentHTML = `
-          <h4 style="font-size: 13px; margin-bottom: 12px; font-weight: bold; text-transform: uppercase; color: #111;">Register Catalog Index (${items.length} items)</h4>
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; margin-bottom: 15px;">
-            <thead>
-              <tr style="background-color: #F4F4F5; border-bottom: 2px solid #E4E4E7;">
-                <th style="padding: 10px; width: 40%;">Product Name</th>
-                <th style="padding: 10px; width: 25%;">Category</th>
-                <th style="padding: 10px; text-align: right; width: 15%;">Unit Cost</th>
-                <th style="padding: 10px; text-align: right; width: 15%;">Retail Price</th>
-                <th style="padding: 10px; text-align: center; width: 10%;">Stock</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${items.map(item => `
-                <tr style="border-bottom: 1px solid #E4E4E7;">
-                  <td style="padding: 10px; font-weight: bold; color: #111;">${item.name}</td>
-                  <td style="padding: 10px; color: #333;">${item.category}</td>
-                  <td style="padding: 10px; text-align: right; font-family: monospace; color: #555;">${item.costPrice.toFixed(2)}</td>
-                  <td style="padding: 10px; text-align: right; font-family: monospace; font-weight: bold; color: #111;">${item.sellPrice.toFixed(2)}</td>
-                  <td style="padding: 10px; text-align: center; font-family: monospace; font-weight: bold; color: #111;">${item.quantity}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-
-      } else if (reportType === 'inventory') {
-        const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
-        const totalStockValue = items.reduce((acc, curr) => acc + (curr.costPrice * curr.quantity), 0);
-        const totalRetailVal = items.reduce((acc, curr) => acc + (curr.sellPrice * curr.quantity), 0);
-        tableContentHTML = `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; font-size: 11px;">
-            <div style="background-color: #FAFAFA; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Total Stock Asset Cost Value:</strong><br/>
-              <span style="font-size: 18px; font-weight: 800; font-family: monospace; color: #111;">${totalStockValue.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #FAFAFA; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Expected Sale Yield:</strong><br/>
-              <span style="font-size: 18px; font-weight: 800; font-family: monospace; color: #00E676;">${totalRetailVal.toFixed(2)}</span>
-            </div>
-          </div>
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
-            <thead>
-              <tr style="background-color: #F4F4F5; border-bottom: 2px solid #E4E4E7;">
-                <th style="padding: 10px; width: 40%;">Catalog ID / Name</th>
-                <th style="padding: 10px; width: 20%;">Category</th>
-                <th style="padding: 10px; text-align: right; width: 13%;">Cost Price</th>
-                <th style="padding: 10px; text-align: right; width: 13%;">Retail Price</th>
-                <th style="padding: 10px; text-align: center; width: 14%;">Stock Level</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${items.map(item => `
-                <tr style="border-bottom: 1px solid #E4E4E7;">
-                  <td style="padding: 10px;">
-                    <div style="font-weight: bold; color: #111;">${item.name}</div>
-                    <div style="font-size: 9px; color: #71717A; font-family: monospace; margin-top: 2px;">SKU: ${item.barcode || 'N/A'}</div>
-                  </td>
-                  <td style="padding: 10px; color: #333;">${item.category}</td>
-                  <td style="padding: 10px; text-align: right; font-family: monospace; color: #555;">${item.costPrice.toFixed(2)}</td>
-                  <td style="padding: 10px; text-align: right; font-family: monospace; color: #111;">${item.sellPrice.toFixed(2)}</td>
-                  <td style="padding: 10px; text-align: center; font-weight: bold; font-family: monospace; color: #111;">${item.quantity}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-
-      } else if (reportType === 'credit') {
-        const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
-        
-        const startVal = document.getElementById('creditFilterStart').value;
-        const endVal = document.getElementById('creditFilterEnd').value;
-        const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
-
-        if (startVal || endVal) {
-          dateRangeSubtitle = `Audit Period: ${startVal || 'Inception'} To ${endVal || 'Present'}`;
-        }
-
-        const outstandingOwedToUs = filteredCredits.filter(c => c.type === 'owe_us' && c.status === 'pending');
-        const outstandingWeOwe = filteredCredits.filter(c => c.type === 'we_owe' && c.status === 'pending');
-
-        const totalReceivable = outstandingOwedToUs.reduce((acc, curr) => acc + curr.amount, 0);
-        const totalPayable = outstandingWeOwe.reduce((acc, curr) => acc + curr.amount, 0);
-
-        tableContentHTML = `
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 11px;">
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Collectibles:</strong><br/>
-              <span style="font-size: 18px; font-weight: bold; color: #00E676; font-family: monospace;">${totalReceivable.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Payables:</strong><br/>
-              <span style="font-size: 18px; font-weight: bold; color: #FF1744; font-family: monospace;">${totalPayable.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Net Exposure:</strong><br/>
-              <span style="font-size: 18px; font-weight: bold; color: #111; font-family: monospace;">${(totalReceivable - totalPayable).toFixed(2)}</span>
-            </div>
-          </div>
-
-          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 12px; color: #111;">Active Debtors (Collectibles)</h4>
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; margin-bottom: 25px;">
-            <thead>
-              <tr style="background-color: #FAFAFA; border-bottom: 1px solid #E4E4E7;">
-                <th style="padding: 8px; width: 30%;">Counterparty</th>
-                <th style="padding: 8px; width: 40%;">Details</th>
-                <th style="padding: 8px; width: 15%;">Due Date</th>
-                <th style="padding: 8px; text-align: right; width: 15%;">Outstanding</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${outstandingOwedToUs.length === 0 ? '<tr><td colspan="4" style="padding: 10px; text-align: center; color: #71717A;">No collectible receivables active.</td></tr>' : outstandingOwedToUs.map(c => `
-                <tr style="border-bottom: 1px solid #E4E4E7;">
-                  <td style="padding: 8px; font-weight: bold; color: #111;">${c.name}</td>
-                  <td style="padding: 8px; color: #333;">${c.desc}</td>
-                  <td style="padding: 8px; font-weight: bold; color: #FF1744;">${c.dueDate || 'N/A'}</td>
-                  <td style="padding: 8px; text-align: right; font-weight: bold; font-family: monospace; color: #00E676;">${c.amount.toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 12px; color: #111;">Liabilities Owed</h4>
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
-            <thead>
-              <tr style="background-color: #FAFAFA; border-bottom: 1px solid #E4E4E7;">
-                <th style="padding: 8px; width: 30%;">Supplier</th>
-                <th style="padding: 8px; width: 40%;">Details</th>
-                <th style="padding: 8px; width: 15%;">Due Date</th>
-                <th style="padding: 8px; text-align: right; width: 15%;">Amount Owed</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${outstandingWeOwe.length === 0 ? '<tr><td colspan="4" style="padding: 10px; text-align: center; color: #71717A;">No payable liabilities registered.</td></tr>' : outstandingWeOwe.map(c => `
-                <tr style="border-bottom: 1px solid #E4E4E7;">
-                  <td style="padding: 8px; font-weight: bold; color: #111;">${c.name}</td>
-                  <td style="padding: 8px; color: #333;">${c.desc}</td>
-                  <td style="padding: 8px; font-weight: bold; color: #FF1744;">${c.dueDate || 'N/A'}</td>
-                  <td style="padding: 8px; text-align: right; font-weight: bold; font-family: monospace; color: #FF1744;">${c.amount.toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-
-      } else if (reportType === 'calculator') {
-        const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
-        
-        const startVal = document.getElementById('calcFilterStart').value;
-        const endVal = document.getElementById('calcFilterEnd').value;
-        const filteredSales = filterDataByDateRange(sales, startVal, endVal);
-
-        if (startVal || endVal) {
-          dateRangeSubtitle = `Audit Period: ${startVal || 'Inception'} To ${endVal || 'Present'}`;
-        }
-
-        const sortedSales = [...filteredSales].reverse();
-        
-        let totalSalesRevenue = 0;
-        let totalSalesProfit = 0;
-
-        sortedSales.forEach(s => {
-          totalSalesRevenue += s.sellPrice * s.quantity;
-          totalSalesProfit += s.totalProfit;
-        });
-
-        const overallMarginPct = totalSalesRevenue > 0 ? ((totalSalesProfit / totalSalesRevenue) * 100).toFixed(1) : '0.0';
-
-        tableContentHTML = `
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 11px;">
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Aggregate Sales Volume:</strong><br/>
-              <span style="font-size: 18px; font-weight: bold; color: #111; font-family: monospace;">${totalSalesRevenue.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Realized Net Margin:</strong><br/>
-              <span style="font-size: 18px; font-weight: bold; color: #00E676; font-family: monospace;">${totalSalesProfit.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Profit Margin:</strong><br/>
-              <span style="font-size: 18px; font-weight: bold; color: #111; font-family: monospace;">${overallMarginPct}%</span>
-            </div>
-          </div>
-
-          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; color: #111; border-bottom: 1px solid #000; padding-bottom: 4px;">Completed Margins Stream History Log</h4>
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
-            <thead>
-              <tr style="background-color: #FAFAFA; border-bottom: 2px solid #E4E4E7;">
-                <th style="padding: 10px; width: 22%;">Checkout Date</th>
-                <th style="padding: 10px; width: 38%;">Product Description</th>
-                <th style="padding: 10px; text-align: center; width: 10%;">Qty</th>
-                <th style="padding: 10px; text-align: right; width: 15%;">Revenue</th>
-                <th style="padding: 10px; text-align: right; width: 15%;">Profit</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${sortedSales.length === 0 ? '<tr><td colspan="5" style="padding: 15px; text-align: center; color: #71717A;">No records found inside this date threshold.</td></tr>' : sortedSales.map(s => {
-                return `
-                  <tr style="border-bottom: 1px solid #E4E4E7;">
-                    <td style="padding: 10px; color: #71717A; font-family: monospace;">${s.date}</td>
-                    <td style="padding: 10px;">
-                      <div style="font-weight: bold; color: #111;">${s.itemName}</div>
-                      <div style="font-size: 9px; color: #71717A; text-transform: uppercase; margin-top: 2px;">${s.category}</div>
-                    </td>
-                    <td style="padding: 10px; text-align: center; font-family: monospace; color: #111;">${s.quantity}</td>
-                    <td style="padding: 10px; text-align: right; font-family: monospace; color: #333;">${(s.sellPrice * s.quantity).toFixed(2)}</td>
-                    <td style="padding: 10px; text-align: right; font-family: monospace; font-weight: bold; color: #00E676;">+${s.totalProfit.toFixed(2)}</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        `;
-
-      } else if (reportType === 'reports') {
-        const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
-        const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
-        const inventory = state.inventory.filter(i => i.quantity >= 0);
-
-        const startVal = document.getElementById('reportsFilterStart').value;
-        const endVal = document.getElementById('reportsFilterEnd').value;
-
-        const filteredSales = filterDataByDateRange(sales, startVal, endVal);
-        const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
-
-        if (startVal || endVal) {
-          dateRangeSubtitle = `Audit Period: ${startVal || 'Inception'} To ${endVal || 'Present'}`;
-        }
-
-        let grossRevenue = 0;
-        let totalCost = 0;
-        let netProfit = 0;
-
-        filteredSales.forEach(s => {
-          grossRevenue += s.sellPrice * s.quantity;
-          totalCost += s.costPrice * s.quantity;
-          netProfit += s.totalProfit;
-        });
-
-        const averageMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(1) : '0.0';
-        const lowStockCount = inventory.filter(i => i.businessId === state.currentBusinessId && i.quantity <= 10).length;
-
-        const categorySalesMapPDF = {};
-        filteredSales.forEach(s => {
-          categorySalesMapPDF[s.category] = (categorySalesMapPDF[s.category] || 0) + (s.sellPrice * s.quantity);
-        });
-
-        // Liabilities calculation
-        let payablesUnresolved = 0;
-        let receivablesUnresolved = 0;
-        filteredCredits.forEach(c => {
-          if (c.status === 'pending') {
-            if (c.type === 'we_owe') payablesUnresolved += c.amount;
-            else receivablesUnresolved += c.amount;
-          }
-        });
-
-        tableContentHTML = `
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 11px;">
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Sales Volume:</strong><br/>
-              <span style="font-size: 16px; font-weight: bold; color: #111; font-family: monospace;">${grossRevenue.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Net Clean Profit:</strong><br/>
-              <span style="font-size: 16px; font-weight: bold; color: #00E676; font-family: monospace;">${netProfit.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Profit margin:</strong><br/>
-              <span style="font-size: 16px; font-weight: bold; color: #111; font-family: monospace;">${averageMargin}%</span>
-            </div>
-            <div style="background-color: #F4F4F5; border: 1px solid #E4E4E7; padding: 12px; border-radius: 8px;">
-              <strong>Low Stocks:</strong><br/>
-              <span style="font-size: 16px; font-weight: bold; color: ${lowStockCount > 0 ? '#FF1744' : '#00E676'}; font-family: monospace;">${lowStockCount} items</span>
-            </div>
-          </div>
-
-          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 12px; color: #111;">Operating Risk Position</h4>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 11px;">
-            <div style="background-color: #E8F5E9; border: 1px solid #C8E6C9; padding: 12px; border-radius: 8px;">
-              <strong style="color: #2E7D32;">Receivables Collectibles:</strong><br/>
-              <span style="font-size: 16px; font-weight: 800; font-family: monospace; color: #2E7D32;">${receivablesUnresolved.toFixed(2)}</span>
-            </div>
-            <div style="background-color: #FFEBEE; border: 1px solid #FFCDD2; padding: 12px; border-radius: 8px;">
-              <strong style="color: #C62828;">Payable Liabilities:</strong><br/>
-              <span style="font-size: 16px; font-weight: 800; font-family: monospace; color: #C62828;">${payablesUnresolved.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <h4 style="font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 12px; color: #111;">Categorical Contributions</h4>
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
-            <thead>
-              <tr style="background-color: #FAFAFA; border-bottom: 1px solid #E4E4E7;">
-                <th style="padding: 10px; width: 50%;">Category Name</th>
-                <th style="padding: 10px; text-align: right; width: 30%;">Sales Contribution</th>
-                <th style="padding: 10px; text-align: center; width: 20%;">Share %</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${Object.keys(categorySalesMapPDF).length === 0 ? '<tr><td colspan="3" style="padding: 15px; text-align: center; color: #71717A;">No category logs captured inside this date range.</td></tr>' : Object.entries(categorySalesMapPDF).map(([cat, value]) => {
-                const ratio = grossRevenue > 0 ? ((value / grossRevenue) * 100).toFixed(0) : '0';
-                return `
-                  <tr style="border-bottom: 1px solid #E4E4E7;">
-                    <td style="padding: 10px; font-weight: bold; color: #111;">${cat}</td>
-                    <td style="padding: 10px; text-align: right; font-family: monospace; color: #333;">${value.toFixed(2)}</td>
-                    <td style="padding: 10px; text-align: center; font-family: monospace; font-weight: bold; color: #111;">${ratio}%</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        `;
-      }
-
-      // PDF layout naming includes titleLabel, activeBiz, and stamps with Watermark added
-      const printHTML = `
-        <div style="position: relative; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #000000; background-color: #ffffff; line-height: 1.4; padding: 25px; min-height: 1024px; overflow: hidden; z-index: 1;">
-          <!-- Watermark Layer securely fixed to center -->
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60px; color: rgba(0,0,0,0.04); font-weight: 900; letter-spacing: 2px; white-space: nowrap; z-index: -1; pointer-events: none; text-align: center;">
-            MADE BY ASIM LONE<br/>@ALFATEHCREATIVES
-          </div>
-          
-          <!-- Content Layer -->
-          <div style="position: relative; z-index: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000000; padding-bottom: 15px; margin-bottom: 20px;">
-              <div>
-                <h1 style="font-size: 22px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: -0.5px;">${activeBiz.name}</h1>
-                <p style="font-size: 10px; color: #71717A; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Operating Segment: ${activeBiz.type}</p>
-                <p style="font-size: 10px; color: #000000; margin: 5px 0 0 0; font-weight: bold;">${dateRangeSubtitle}</p>
-              </div>
-              <div style="text-align: right; font-size: 10px; color: #71717A;">
-                <div style="margin-bottom: 2px;"><strong>DOCUMENT:</strong> ${titleLabel}</div>
-                <div><strong>AUDIT TIMESTAMP:</strong> ${stamps}</div>
-              </div>
-            </div>
-
-            <div style="margin-bottom: 30px;">
-              ${tableContentHTML}
-            </div>
-
-            <div style="text-align: center; border-top: 1px solid #E4E4E7; padding-top: 15px; margin-top: 40px; font-size: 10px; color: #71717A;">
-              <p style="margin: 0; font-weight: 600;">OnyxPOS Statement. Strictly Internal & Confidential.</p>
-            </div>
-          </div>
-        </div>
-      `;
-
-      generateDirectPDF(printHTML, activeBiz.name, titleLabel, stamps);
-    }
-
-    // --- DIRECT PDF DOWNLOAD GENERATOR ---
-    function generateDirectPDF(htmlContent, branchName, section, dateStr) {
-      // Modern robust fallback: use native browser printing engine
-      // This is highly compatible across iOS, Android, and Desktop and natively supports "Save as PDF"
       const printArea = document.getElementById('printArea');
-      printArea.innerHTML = htmlContent;
-      printArea.classList.remove('hidden');
-
-      showNotification(`Opening ${section} Report... Select 'Save as PDF' to download.`);
-
-      // Give DOM time to render complex tables before calling native print module
-      setTimeout(() => {
-        window.print();
-        printArea.classList.add('hidden');
-        printArea.innerHTML = '';
-      }, 500);
-    }
-
-    // --- UNIVERSAL PRINT/PDF ENGINE CONTROLLER (Mobile Safe Renderer) ---
-    function executePrintJob(htmlContent) {
-      const printArea = document.getElementById('printArea');
-      printArea.innerHTML = htmlContent;
+      printArea.innerHTML = receiptHTML;
       printArea.classList.remove('hidden');
       
-      // Delay for mobile DOM paint sequence before native print prompt
       setTimeout(() => {
         window.print();
         printArea.classList.add('hidden');
         printArea.innerHTML = '';
       }, 200);
+    }
+
+    // --- JSPDF FULL A4 EXPORT ENGINE ---
+    function exportViewToPDF(reportType, titleLabel) {
+      showNotification(`Generating ${titleLabel} PDF File...`);
+      
+      // Delay allows JS execution safely before rendering
+      setTimeout(() => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Store Branch' };
+        const stamps = getSystemTimestamp();
+        
+        // Universal Setup Header
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text(activeBiz.name.toUpperCase(), 14, 20);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(`Report Subject: ${titleLabel}`, 14, 26);
+        doc.text(`Generated on: ${stamps}`, 14, 31);
+        
+        doc.setLineWidth(0.5);
+        doc.line(14, 34, 196, 34);
+        doc.setTextColor(0);
+
+        let finalY = 40;
+
+        // Conditionals per tab
+        if (reportType === 'register') {
+          const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
+          doc.autoTable({
+            startY: finalY,
+            headStyles: { fillColor: [0, 0, 0] },
+            head: [['Product Name', 'Category', 'Unit Cost', 'Retail Price', 'In Stock']],
+            body: items.map(i => [
+              i.name, 
+              i.category, 
+              i.costPrice.toFixed(2), 
+              i.sellPrice.toFixed(2), 
+              i.quantity
+            ])
+          });
+        } 
+        
+        else if (reportType === 'inventory') {
+          const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
+          const totalStockValue = items.reduce((acc, curr) => acc + (curr.costPrice * curr.quantity), 0);
+          const totalRetailVal = items.reduce((acc, curr) => acc + (curr.sellPrice * curr.quantity), 0);
+          
+          doc.setFont("helvetica", "bold");
+          doc.text(`Total Asset Stock Value: ${totalStockValue.toFixed(2)}`, 14, finalY);
+          doc.text(`Expected Retail Yield: ${totalRetailVal.toFixed(2)}`, 100, finalY);
+          finalY += 8;
+
+          doc.autoTable({
+            startY: finalY,
+            headStyles: { fillColor: [0, 0, 0] },
+            head: [['Catalog ID / Name', 'Category', 'Cost Price', 'Retail Price', 'Stock Level']],
+            body: items.map(i => [
+              `${i.name}\n(SKU: ${i.barcode || 'N/A'})`, 
+              i.category, 
+              i.costPrice.toFixed(2), 
+              i.sellPrice.toFixed(2), 
+              i.quantity
+            ])
+          });
+        }
+        
+        else if (reportType === 'credit') {
+          const credits = state.credits.filter(c => c.businessId === state.currentBusinessId);
+          const startVal = document.getElementById('creditFilterStart').value;
+          const endVal = document.getElementById('creditFilterEnd').value;
+          const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
+          
+          const outstandingOwedToUs = filteredCredits.filter(c => c.type === 'owe_us' && c.status === 'pending');
+          const outstandingWeOwe = filteredCredits.filter(c => c.type === 'we_owe' && c.status === 'pending');
+          const totalReceivable = outstandingOwedToUs.reduce((acc, curr) => acc + curr.amount, 0);
+          const totalPayable = outstandingWeOwe.reduce((acc, curr) => acc + curr.amount, 0);
+
+          if (startVal || endVal) {
+            doc.text(`Period: ${startVal || 'Start'} to ${endVal || 'Present'}`, 14, finalY); 
+            finalY += 8;
+          }
+          
+          doc.setFont("helvetica", "bold");
+          doc.text(`Total Collectibles: +${totalReceivable.toFixed(2)}`, 14, finalY);
+          doc.text(`Total Payables: -${totalPayable.toFixed(2)}`, 80, finalY);
+          doc.text(`Net Exposure: ${(totalReceivable - totalPayable).toFixed(2)}`, 150, finalY);
+          finalY += 10;
+
+          doc.text("Active Debtors (Receivables)", 14, finalY);
+          doc.autoTable({
+            startY: finalY + 3,
+            headStyles: { fillColor: [0, 200, 118] },
+            head: [['Counterparty', 'Details', 'Due Date', 'Outstanding']],
+            body: outstandingOwedToUs.map(c => [c.name, c.desc, c.dueDate || '-', c.amount.toFixed(2)])
+          });
+
+          finalY = doc.lastAutoTable.finalY + 15;
+          doc.text("Liabilities Owed (Payables)", 14, finalY);
+          doc.autoTable({
+            startY: finalY + 3,
+            headStyles: { fillColor: [255, 23, 68] },
+            head: [['Supplier', 'Details', 'Due Date', 'Amount Owed']],
+            body: outstandingWeOwe.map(c => [c.name, c.desc, c.dueDate || '-', c.amount.toFixed(2)])
+          });
+        }
+        
+        else if (reportType === 'calculator' || reportType === 'reports') {
+          const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
+          const startVal = document.getElementById(reportType === 'reports' ? 'reportsFilterStart' : 'calcFilterStart').value;
+          const endVal = document.getElementById(reportType === 'reports' ? 'reportsFilterEnd' : 'calcFilterEnd').value;
+          const filteredSales = filterDataByDateRange(sales, startVal, endVal);
+          
+          let totalSalesRevenue = 0;
+          let totalSalesProfit = 0;
+          filteredSales.forEach(s => { 
+            totalSalesRevenue += s.sellPrice * s.quantity; 
+            totalSalesProfit += s.totalProfit; 
+          });
+          
+          const overallMarginPct = totalSalesRevenue > 0 ? ((totalSalesProfit / totalSalesRevenue) * 100).toFixed(1) : '0.0';
+
+          if (startVal || endVal) { 
+            doc.text(`Period Audited: ${startVal || 'Start'} to ${endVal || 'Present'}`, 14, finalY); 
+            finalY += 8; 
+          }
+          
+          doc.setFont("helvetica", "bold");
+          doc.text(`Total Tracked Revenue: ${totalSalesRevenue.toFixed(2)}`, 14, finalY);
+          doc.text(`Total Tracked Profit: ${totalSalesProfit.toFixed(2)}`, 80, finalY);
+          doc.text(`Operating Margin: ${overallMarginPct}%`, 150, finalY);
+          finalY += 10;
+
+          doc.autoTable({
+            startY: finalY,
+            headStyles: { fillColor: [0, 0, 0] },
+            head: [['Date of Sale', 'Product Catalog Name', 'Qty Sold', 'Revenue', 'Realized Profit']],
+            body: [...filteredSales].reverse().map(s => [
+              s.date.split(' ')[0], 
+              s.itemName, 
+              s.quantity, 
+              (s.sellPrice * s.quantity).toFixed(2), 
+              `+${s.totalProfit.toFixed(2)}`
+            ])
+          });
+        }
+        
+        else if (reportType === 'cashdesk') {
+          const dateFilter = document.getElementById('cashDeskFilterDate').value;
+          const logs = state.cashLogs.filter(c => c.businessId === state.currentBusinessId);
+          const sales = state.sales.filter(s => s.businessId === state.currentBusinessId && s.paymentMethod === 'Cash');
+          
+          const filteredLogs = filterDataByDateRange(logs, dateFilter, dateFilter);
+          const filteredSales = filterDataByDateRange(sales, dateFilter, dateFilter);
+          
+          let opening = 0, income = 0, expense = 0, cashSales = 0;
+          let tableBody = [];
+          
+          filteredLogs.forEach(l => {
+            if(l.type === 'Opening') opening += l.amount;
+            if(l.type === 'Income') income += l.amount;
+            if(l.type === 'Expense') expense += l.amount;
+            tableBody.push([l.date, l.type, l.desc, l.type === 'Expense' ? `-${l.amount.toFixed(2)}` : `+${l.amount.toFixed(2)}`]);
+          });
+          
+          filteredSales.forEach(s => {
+            const rev = s.sellPrice * s.quantity;
+            cashSales += rev;
+            tableBody.push([s.date, 'Sale', `Cash Sale: ${s.quantity}x ${s.itemName}`, `+${rev.toFixed(2)}`]);
+          });
+          
+          tableBody.sort((a,b) => new Date(b[0]) - new Date(a[0]));
+          
+          doc.text(`Log Tracking Date: ${dateFilter || 'All Time History'}`, 14, finalY); 
+          finalY += 8;
+          
+          doc.setFont("helvetica", "bold");
+          doc.text(`Calculated Drawer Balance: ${(opening + income + cashSales - expense).toFixed(2)}`, 14, finalY);
+          finalY += 10;
+
+          doc.autoTable({
+            startY: finalY,
+            headStyles: { fillColor: [0, 0, 0] },
+            head: [['Timestamp', 'Log Type', 'Description / Reason', 'Amount Variance']],
+            body: tableBody
+          });
+        }
+
+        // Fire Download
+        const filename = `${activeBiz.name.replace(/\s+/g, '_')}_${titleLabel.replace(/\s+/g, '')}_${Date.now()}.pdf`;
+        doc.save(filename);
+        showNotification("PDF Exported Successfully!");
+
+      }, 150);
     }
   </script>
 </body>

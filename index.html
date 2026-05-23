@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OnyxPOS - Easy Shop & Stock Manager</title>
+  <title>Karobar Smart - Easy Shop & Stock Manager</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
@@ -14,7 +14,7 @@
   <!-- iOS Safari PWA Support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Onyx POS">
+  <meta name="apple-mobile-web-app-title" content="Karobar Smart">
   <link class="apple-touch-icon" href="icon.png">
   <meta name="mobile-web-app-capable" content="yes">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -129,12 +129,10 @@
   <!-- ========================================== -->
   <div class="lg:hidden w-full panel-card border-b border-theme p-5 flex items-center justify-between z-30 sticky top-0 shadow-sm">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 flex items-center justify-center overflow-hidden bg-black text-white rounded-xl font-bold">
-        OP
-      </div>
+<div class="w-10 h-10 overflow-hidden rounded-xl"><img src="icon.png" alt="Icon" class="w-full h-full object-cover" /></div>
       <div>
-        <h1 class="font-extrabold text-base tracking-tight text-black">OnyxPOS</h1>
-        <p class="text-[9px] tracking-widest uppercase font-bold text-muted">Shop Manager</p>
+        <h1 class="font-extrabold text-base tracking-tight text-black">Karobar Smart</h1>
+        <p class="text-[9px] tracking-widest uppercase font-bold text-muted">Business Manager</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -152,10 +150,10 @@
     <!-- Header Block (Desktop Only) -->
     <div class="hidden lg:flex p-6 border-b border-theme items-center gap-3">
       <div class="w-12 h-12 flex items-center justify-center overflow-hidden shrink-0 bg-black text-white rounded-2xl font-black text-xl shadow-md">
-        OP
+        KS
       </div>
       <div>
-        <h1 class="font-extrabold text-lg tracking-tight text-black">OnyxPOS</h1>
+        <h1 class="font-extrabold text-lg tracking-tight text-black">Karobar Smart</h1>
         <p class="text-[10px] tracking-widest uppercase font-bold text-muted">Shop Hub</p>
       </div>
     </div>
@@ -220,7 +218,10 @@
     </nav>
 
     <!-- Sidebar Footer Actions & Watermark -->
-    <div class="p-5 mt-auto space-y-6">
+    <div class="p-5 mt-auto space-y-4">
+      <div class="text-center text-[10px] text-muted font-bold">
+        Made by Asim Lone <a href="https://alfatehcreative.agency/" target="_blank" class="text-black hover:underline">@alfatehcreatives</a>
+      </div>
       <button onclick="triggerHardResetConfirmation()" title="Wipe database & restart fresh" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all text-vibrantRed bg-vibrantRed/10 hover:bg-vibrantRed/20 border border-vibrantRed/20">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
         <span>Wipe Database</span>
@@ -1246,6 +1247,11 @@
   <!-- MAIN JS APPLICATION ARCHITECTURE -->
   <!-- ========================================== -->
   <script>
+    // --- FORMATTING HELPER ---
+    function fmt(num) {
+      return Number(num).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
     // --- DATABASE STATE SCHEME ---
     let state = {
       businesses: [],
@@ -1419,13 +1425,21 @@
 
     // --- LOCAL STORAGE CORE CONTROLLER ---
     function saveStateToStorage() {
-      localStorage.setItem('onyxpos_database_v3_premium', JSON.stringify(state));
+      localStorage.setItem('karobarsmart_database_v3_premium', JSON.stringify(state));
       updateBorrowersNamesDatalist();
     }
 
     // --- LOAD FROM STORAGE ---
     function loadStateFromStorage() {
-      const stored = localStorage.getItem('onyxpos_database_v3_premium');
+      let stored = localStorage.getItem('karobarsmart_database_v3_premium');
+      // Migration handler from old OnyxPOS key
+      if (!stored) {
+        stored = localStorage.getItem('onyxpos_database_v3_premium');
+        if (stored) {
+          localStorage.setItem('karobarsmart_database_v3_premium', stored);
+        }
+      }
+
       if (stored) {
         try {
           state = JSON.parse(stored);
@@ -1470,12 +1484,9 @@
     }
 
     // --- CUSTOM PROMPT CONFIRM DIALOG ---
-    function showCustomConfirm(msg, onProceed, title = "Verification Required", proceedText = "Proceed", cancelText = "Cancel", onCancel = null) {
+    function showCustomConfirm(msg, onProceed, title = "Verification Required") {
       document.getElementById('confirmTitle').innerText = title;
       document.getElementById('confirmMessage').innerText = msg;
-      document.getElementById('confirmProceedBtn').innerText = proceedText;
-      document.getElementById('confirmCancelBtn').innerText = cancelText;
-      
       onConfirmProceedCallback = onProceed;
       
       const confirmModal = document.getElementById('modalConfirm');
@@ -1484,7 +1495,6 @@
       document.getElementById('confirmCancelBtn').onclick = function() {
         confirmModal.classList.add('hidden');
         onConfirmProceedCallback = null;
-        if(onCancel) onCancel();
       };
       
       document.getElementById('confirmProceedBtn').onclick = function() {
@@ -1499,7 +1509,8 @@
     // --- TRIGGER WIPE DATABASE ---
     function triggerHardResetConfirmation() {
       showCustomConfirm("Are you absolutely sure you want to completely wipe the entire POS database? This action is permanent.", function() {
-        localStorage.removeItem('onyxpos_database_v3_premium');
+        localStorage.removeItem('karobarsmart_database_v3_premium');
+        localStorage.removeItem('onyxpos_database_v3_premium'); // Also clear legacy
         window.location.reload();
       }, "Hard Database Reset");
     }
@@ -1753,7 +1764,7 @@
 
     function closeBusinessModal() {
       if (state.businesses.length === 0) {
-        showCustomAlert("Please setup at least one branch to use OnyxPOS.", "No Store Installed");
+        showCustomAlert("Please setup at least one branch to use Karobar Smart.", "No Store Installed");
         return;
       }
       document.getElementById('modalBusiness').classList.add('hidden');
@@ -2033,10 +2044,10 @@
             </span>
           </td>
           <td class="p-1 sm:p-4 align-top text-right font-mono font-semibold text-zinc-600">
-            ${item.costPrice.toFixed(2)}
+            ${fmt(item.costPrice)}
           </td>
           <td class="p-1 sm:p-4 align-top text-right font-mono font-black text-black">
-            ${item.sellPrice.toFixed(2)}
+            ${fmt(item.sellPrice)}
           </td>
           <td class="p-1 sm:p-4 align-top text-center">
             <span class="px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[8px] sm:text-xs font-black font-mono inline-block min-w-[30px] sm:min-w-[50px] ${
@@ -2115,62 +2126,49 @@
         return;
       }
 
-      // Group Items by Category for organized visual presentation on POS Grid
-      const groupedItems = {};
       items.forEach(item => {
-        if (!groupedItems[item.category]) groupedItems[item.category] = [];
-        groupedItems[item.category].push(item);
-      });
+        const isOutOfStock = item.quantity === 0;
+        const isLowStock = item.quantity <= 10 && !isOutOfStock;
 
-      Object.keys(groupedItems).sort().forEach(category => {
-        // Build Category Section Header
-        const headerDiv = document.createElement('div');
-        headerDiv.className = "col-span-full mt-4 mb-1 first:mt-0";
-        headerDiv.innerHTML = `<h3 class="font-black text-[10px] sm:text-xs text-muted uppercase tracking-wider border-b border-theme pb-1">${category}</h3>`;
-        grid.appendChild(headerDiv);
+        const card = document.createElement('div');
+        // Compact alignment
+        card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
+          isOutOfStock 
+            ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
+            : 'hover:border-current hover:shadow-md'
+        }`;
+        
+        if (!isOutOfStock) {
+          card.onclick = () => addProductToCart(item);
+        }
 
-        // Map Items under Category Header
-        groupedItems[category].forEach(item => {
-          const isOutOfStock = item.quantity === 0;
-          const isLowStock = item.quantity <= 10 && !isOutOfStock;
-
-          const card = document.createElement('div');
-          // Compact alignment
-          card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
-            isOutOfStock 
-              ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
-              : 'hover:border-current hover:shadow-md'
-          }`;
-          
-          if (!isOutOfStock) {
-            card.onclick = () => addProductToCart(item);
-          }
-
-          card.innerHTML = `
-            <div class="flex flex-col h-full text-left">
-              <div class="flex justify-end items-center gap-0.5 mb-1 sm:mb-2">
-                ${
-                  isOutOfStock ? '<span class="px-1 py-0.2 bg-vibrantRed/15 text-vibrantRed rounded text-[6px] sm:text-[9px] font-black uppercase">0</span>' :
-                  isLowStock ? `<span class="px-1 py-0.2 bg-amber-500/15 text-amber-500 rounded text-[6px] sm:text-[9px] font-black">${item.quantity}</span>` :
-                  `<span class="px-1 py-0.2 bg-vibrantGreen/15 text-vibrantGreen rounded text-[6px] sm:text-[9px] font-bold">${item.quantity}</span>`
-                }
+        card.innerHTML = `
+          <div class="flex flex-col h-full text-left">
+            <div class="flex justify-between items-center gap-0.5 mb-1 sm:mb-2">
+              <span class="px-1 py-0.2 bg-zinc-100 border border-theme text-black rounded text-[6px] sm:text-[9px] font-bold uppercase tracking-wider truncate max-w-[32px] sm:max-w-[100px]">
+                ${item.category}
+              </span>
+              ${
+                isOutOfStock ? '<span class="px-1 py-0.2 bg-vibrantRed/15 text-vibrantRed rounded text-[6px] sm:text-[9px] font-black uppercase">0</span>' :
+                isLowStock ? `<span class="px-1 py-0.2 bg-amber-500/15 text-amber-500 rounded text-[6px] sm:text-[9px] font-black">${item.quantity}</span>` :
+                `<span class="px-1 py-0.2 bg-vibrantGreen/15 text-vibrantGreen rounded text-[6px] sm:text-[9px] font-bold">${item.quantity}</span>`
+              }
+            </div>
+            <h3 class="font-bold text-[7px] sm:text-xs line-clamp-2 min-h-[20px] sm:min-h-[34px] text-black leading-tight">${item.name}</h3>
+            ${item.barcode ? `<span class="text-[5px] sm:text-[8px] text-muted font-mono flex items-center gap-0.5 mt-0.5 truncate"><i data-lucide="barcode" class="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5"></i> ${item.barcode}</span>` : ''}
+            
+            <div class="mt-auto pt-1 sm:pt-2.5 border-t border-theme flex items-center justify-between gap-0.5">
+              <div>
+                <p class="text-[7px] sm:text-xs font-black font-mono text-black">${fmt(item.sellPrice)}</p>
               </div>
-              <h3 class="font-bold text-[7px] sm:text-xs line-clamp-2 min-h-[20px] sm:min-h-[34px] text-black leading-tight">${item.name}</h3>
-              ${item.barcode ? `<span class="text-[5px] sm:text-[8px] text-muted font-mono flex items-center gap-0.5 mt-0.5 truncate"><i data-lucide="barcode" class="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5"></i> ${item.barcode}</span>` : ''}
-              
-              <div class="mt-auto pt-1 sm:pt-2.5 border-t border-theme flex items-center justify-between gap-0.5">
-                <div>
-                  <p class="text-[7px] sm:text-xs font-black font-mono text-black">${item.sellPrice.toFixed(2)}</p>
-                </div>
-                <div class="p-0.5 sm:p-1.5 bg-zinc-150 border border-theme text-black rounded hover:bg-zinc-200 transition-colors flex items-center justify-center">
-                  <i data-lucide="plus" class="w-2 h-2 sm:w-3.5 sm:h-3.5"></i>
-                </div>
+              <div class="p-0.5 sm:p-1.5 bg-zinc-150 border border-theme text-black rounded hover:bg-zinc-200 transition-colors flex items-center justify-center">
+                <i data-lucide="plus" class="w-2 h-2 sm:w-3.5 sm:h-3.5"></i>
               </div>
             </div>
-          `;
+          </div>
+        `;
 
-          grid.appendChild(card);
-        });
+        grid.appendChild(card);
       });
       lucide.createIcons();
     }
@@ -2270,7 +2268,7 @@
         div.innerHTML = `
           <div class="flex-1 min-w-0">
             <h4 class="font-bold text-xs truncate text-black">${c.name}</h4>
-            <p class="text-[10px] font-semibold font-mono text-muted">${c.sellPrice.toFixed(2)} / unit</p>
+            <p class="text-[10px] font-semibold font-mono text-muted">${fmt(c.sellPrice)} / unit</p>
           </div>
           
           <div class="flex items-center gap-2">
@@ -2286,7 +2284,7 @@
       });
 
       document.getElementById('cartCountBadge').innerText = `${itemsCount} Items`;
-      document.getElementById('cartTotalText').innerText = `${subtotal.toFixed(2)}`;
+      document.getElementById('cartTotalText').innerText = `${fmt(subtotal)}`;
       lucide.createIcons();
     }
 
@@ -2465,9 +2463,9 @@
       combinedStream.sort((a,b) => new Date(b.date) - new Date(a.date));
 
       const drawerBalance = openingBalance + totalIncome + totalCashSales - totalExpenses;
-      document.getElementById('deskDrawerBalance').innerText = drawerBalance.toFixed(2);
-      document.getElementById('deskTotalIn').innerText = (totalIncome + totalCashSales).toFixed(2);
-      document.getElementById('deskTotalOut').innerText = totalExpenses.toFixed(2);
+      document.getElementById('deskDrawerBalance').innerText = fmt(drawerBalance);
+      document.getElementById('deskTotalIn').innerText = fmt(totalIncome + totalCashSales);
+      document.getElementById('deskTotalOut').innerText = fmt(totalExpenses);
 
       if (combinedStream.length === 0) {
         container.innerHTML = `
@@ -2506,7 +2504,7 @@
                 ${item.desc}
               </td>
               <td class="p-1 sm:p-3 align-top text-right font-mono font-bold text-[8px] sm:text-xs ${item.type === 'Expense' ? 'text-vibrantRed' : 'text-vibrantGreen'}">
-                ${sign}${item.amount.toFixed(2)}
+                ${sign}${fmt(item.amount)}
               </td>
               <td class="p-1 sm:p-3 align-top text-right">
                 ${!item.isSale ? `
@@ -2654,12 +2652,12 @@
         }
       });
 
-      document.getElementById('totalPayableText').innerText = weOweTotal.toFixed(2);
-      document.getElementById('totalReceivableText').innerText = oweUsTotal.toFixed(2);
+      document.getElementById('totalPayableText').innerText = fmt(weOweTotal);
+      document.getElementById('totalReceivableText').innerText = fmt(oweUsTotal);
 
       const netPosition = oweUsTotal - weOweTotal;
       const netEl = document.getElementById('netLiquidityText');
-      netEl.innerText = `${netPosition >= 0 ? '+' : ''}${netPosition.toFixed(2)}`;
+      netEl.innerText = `${netPosition >= 0 ? '+' : '-'}${fmt(Math.abs(netPosition))}`;
       netEl.className = netPosition >= 0 ? "text-2xl font-black text-vibrantGreen font-mono" : "text-2xl font-black text-vibrantRed font-mono";
 
       // Apply search filter if present
@@ -2697,9 +2695,9 @@
         const overallNet = grp.totalOwedToUs - grp.totalWeOwe;
         let netStatusText = '';
         if (overallNet > 0) {
-          netStatusText = `<span class="text-xs font-bold text-vibrantGreen bg-vibrantGreen/10 px-2.5 py-1 rounded-full font-mono">Owes us: ${overallNet.toFixed(2)}</span>`;
+          netStatusText = `<span class="text-xs font-bold text-vibrantGreen bg-vibrantGreen/10 px-2.5 py-1 rounded-full font-mono">Owes us: ${fmt(overallNet)}</span>`;
         } else if (overallNet < 0) {
-          netStatusText = `<span class="text-xs font-bold text-vibrantRed bg-vibrantRed/10 px-2.5 py-1 rounded-full font-mono">We owe: ${Math.abs(overallNet).toFixed(2)}</span>`;
+          netStatusText = `<span class="text-xs font-bold text-vibrantRed bg-vibrantRed/10 px-2.5 py-1 rounded-full font-mono">We owe: ${fmt(Math.abs(overallNet))}</span>`;
         } else {
           netStatusText = `<span class="text-xs font-bold text-muted bg-zinc-100 px-2.5 py-1 rounded-full">Settle Balanced</span>`;
         }
@@ -2720,7 +2718,7 @@
                 ${ent.dueDate ? `<p class="text-[10px] text-zinc-600 font-bold flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> Due: ${ent.dueDate}</p>` : ''}
               </div>
               <div class="text-right shrink-0">
-                <p class="font-bold font-mono text-sm ${ent.type === 'owe_us' ? 'text-vibrantGreen' : 'text-vibrantRed'}">${ent.amount.toFixed(2)}</p>
+                <p class="font-bold font-mono text-sm ${ent.type === 'owe_us' ? 'text-vibrantGreen' : 'text-vibrantRed'}">${fmt(ent.amount)}</p>
                 <div class="mt-2 flex items-center gap-1 justify-end">
                   <button onclick="toggleCreditLedgerStatus('${ent.id}')" class="px-2 py-0.5 bg-zinc-200 border border-theme rounded text-[9px] font-bold text-black hover:bg-zinc-350">
                     ${isResolved ? 'Re-open' : 'Settle'}
@@ -2766,7 +2764,7 @@
       items.forEach(i => {
         const opt = document.createElement('option');
         opt.value = i.id;
-        opt.innerText = `${i.name} (${i.sellPrice.toFixed(2)})`;
+        opt.innerText = `${i.name} (${fmt(i.sellPrice)})`;
         select.appendChild(opt);
       });
 
@@ -2798,9 +2796,9 @@
       const grossProfit = totalRevenue - totalCost;
       const margin = totalRevenue > 0 ? ((grossProfit / totalRevenue) * 100).toFixed(1) : '0.0';
 
-      document.getElementById('sandboxTotalCostText').innerText = totalCost.toFixed(2);
-      document.getElementById('sandboxTotalRevenueText').innerText = totalRevenue.toFixed(2);
-      document.getElementById('sandboxProfitText').innerText = grossProfit.toFixed(2);
+      document.getElementById('sandboxTotalCostText').innerText = fmt(totalCost);
+      document.getElementById('sandboxTotalRevenueText').innerText = fmt(totalRevenue);
+      document.getElementById('sandboxProfitText').innerText = fmt(grossProfit);
       
       const badge = document.getElementById('sandboxMarginBadge');
       badge.innerText = `${margin}% Margin`;
@@ -2861,8 +2859,8 @@
             </span>
           </td>
           <td class="p-1 sm:p-3 align-top text-right w-[20%]">
-            <p class="font-black text-vibrantGreen font-mono text-[8px] sm:text-xs">+${itemProfit.toFixed(2)}</p>
-            <p class="text-[6px] sm:text-[9px] text-muted font-mono block mt-0.5">Cost: ${(s.costPrice * s.quantity).toFixed(2)}</p>
+            <p class="font-black text-vibrantGreen font-mono text-[8px] sm:text-xs">+${fmt(itemProfit)}</p>
+            <p class="text-[6px] sm:text-[9px] text-muted font-mono block mt-0.5">Cost: ${fmt(s.costPrice * s.quantity)}</p>
           </td>
         `;
         container.appendChild(tr);
@@ -2898,8 +2896,8 @@
       const averageMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(1) : '0.0';
       const lowStockCount = inventory.filter(i => i.quantity <= 10).length;
 
-      document.getElementById('kpiGrossRevenue').innerText = grossRevenue.toFixed(2);
-      document.getElementById('kpiNetProfit').innerText = netProfit.toFixed(2);
+      document.getElementById('kpiGrossRevenue').innerText = fmt(grossRevenue);
+      document.getElementById('kpiNetProfit').innerText = fmt(netProfit);
       document.getElementById('kpiAverageMargin').innerText = `${averageMargin}%`;
       document.getElementById('kpiLowStockCount').innerText = lowStockCount;
 
@@ -2928,7 +2926,7 @@
           wrapper.innerHTML = `
             <div class="flex justify-between text-xs font-bold text-muted">
               <span>${cat}</span>
-              <span class="font-mono">${value.toFixed(2)} (${ratio}%)</span>
+              <span class="font-mono">${fmt(value)} (${ratio}%)</span>
             </div>
             <div class="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden border border-theme">
               <div class="bg-black h-full rounded-full transition-all duration-500" style="width: ${ratio}%"></div>
@@ -2948,8 +2946,8 @@
         }
       });
 
-      document.getElementById('riskCardReceivables').innerText = receivablesUnresolved.toFixed(2);
-      document.getElementById('riskCardPayables').innerText = payablesUnresolved.toFixed(2);
+      document.getElementById('riskCardReceivables').innerText = fmt(receivablesUnresolved);
+      document.getElementById('riskCardPayables').innerText = fmt(payablesUnresolved);
 
       const riskBar = document.getElementById('comparativeRiskBar');
       riskBar.innerHTML = '';
@@ -2985,150 +2983,17 @@
 
 
     // ==========================================
-    // 8. PRINT & EXPORT ENGINE (Native + Bluetooth)
+    // 8. PRINT & EXPORT ENGINE
     // ==========================================
     
+    // --- NATIVE MINI RECEIPT PRINT ---
     function triggerReceiptPrint() {
       if (cart.length === 0) {
         showCustomAlert("The active ticket is empty.", "Print Error");
         return;
       }
-      
-      showCustomConfirm(
-        "Choose your printing method. Bluetooth is recommended for mobile thermal receipt printers.", 
-        () => { printReceiptBluetooth(); }, 
-        "Select Print Method",
-        "Bluetooth Thermal",
-        "Standard (PC/Web)",
-        () => { triggerReceiptPrintNative(); }
-      );
-    }
 
-    // --- BLUETOOTH THERMAL PRINTER INTEGRATION ---
-    async function printReceiptBluetooth() {
-      if (!navigator.bluetooth) {
-        showCustomAlert("Web Bluetooth is not supported on this browser or device. Try using Chrome for Android, or fallback to the Standard print method.", "Bluetooth Unavailable");
-        triggerReceiptPrintNative();
-        return;
-      }
-
-      try {
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [
-            '000018f0-0000-1000-8000-00805f9b34fb', // Typical ESC/POS Printer
-            'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // Generic Thermal Base
-            '000018f0-0000-1000-8000-00805f9b34fa'
-          ]
-        });
-
-        showNotification("Connecting to Printer...");
-        const server = await device.gatt.connect();
-        const services = await server.getPrimaryServices();
-        let printChar = null;
-
-        for (let service of services) {
-          const chars = await service.getCharacteristics();
-          for (let char of chars) {
-            if (char.properties.write || char.properties.writeWithoutResponse) {
-              printChar = char;
-              break;
-            }
-          }
-          if (printChar) break;
-        }
-
-        if (!printChar) throw new Error("Writable print characteristic not found.");
-
-        const buffer = generateEscPosBuffer();
-        const CHUNK_SIZE = 100;
-        
-        for (let i = 0; i < buffer.length; i += CHUNK_SIZE) {
-          const chunk = buffer.slice(i, i + CHUNK_SIZE);
-          await printChar.writeValue(chunk);
-        }
-
-        showNotification("Receipt successfully printed via Bluetooth!");
-        device.gatt.disconnect();
-      } catch (err) {
-        console.error("Bluetooth print failed:", err);
-        if (err.name !== 'NotFoundError') {
-          showCustomAlert("Failed to connect or print via Bluetooth: " + err.message, "Bluetooth Error");
-        }
-      }
-    }
-
-    function generateEscPosBuffer() {
-      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Shop Branch', type: 'General' };
-      const receiptId = 'REC-' + Math.floor(Math.random() * 900000 + 100000);
-      const subtotal = cart.reduce((sum, item) => sum + (item.sellPrice * item.qtySelected), 0);
-      const stamps = getSystemTimestamp();
-
-      const ESC = 0x1B;
-      const GS = 0x1D;
-      const LF = 0x0A;
-      let data = [];
-      
-      const add = (arr) => data.push(...arr);
-      const addStr = (str) => {
-          const encoder = new TextEncoder();
-          const bytes = encoder.encode(str);
-          for(let i=0; i<bytes.length; i++) data.push(bytes[i]);
-      };
-
-      add([ESC, 0x40]); // Init
-      add([ESC, 0x61, 0x01]); // Align Center
-      add([ESC, 0x45, 0x01]); // Bold On
-      add([GS, 0x21, 0x00]); // Normal text size
-      addStr(activeBiz.name.toUpperCase() + "\n");
-      
-      add([ESC, 0x45, 0x00]); // Bold Off
-      addStr("Segment: " + activeBiz.type + "\n");
-      add([LF]);
-
-      add([ESC, 0x61, 0x00]); // Align Left
-      addStr("RECEIPT NO: " + receiptId + "\n");
-      addStr("DATE: " + stamps + "\n");
-      addStr("PAYMENT: " + paymentMethod + "\n");
-      add([LF]);
-
-      // 32 Char width for standard 58mm printer
-      addStr("--------------------------------\n");
-      addStr("ITEM                 AMT\n");
-      addStr("--------------------------------\n");
-
-      cart.forEach(item => {
-          let name = item.name.substring(0, 20);
-          let total = (item.sellPrice * item.qtySelected).toFixed(2);
-          let spaces = 32 - name.length - total.length;
-          if (spaces < 1) spaces = 1;
-          let line = name + " ".repeat(spaces) + total;
-          addStr(line + "\n");
-          addStr(`  ${item.qtySelected} x ${item.sellPrice.toFixed(2)}\n`);
-      });
-
-      addStr("--------------------------------\n");
-      add([ESC, 0x61, 0x02]); // Align Right
-      addStr("SUBTOTAL: " + subtotal.toFixed(2) + "\n");
-      add([ESC, 0x45, 0x01]); // Bold On
-      addStr("TOTAL:    " + subtotal.toFixed(2) + "\n");
-      add([ESC, 0x45, 0x00]); // Bold Off
-      add([LF]);
-
-      add([ESC, 0x61, 0x01]); // Align Center
-      addStr("Thank you for shopping!\n");
-      addStr("OnyxPOS Manager Systems\n");
-      add([LF, LF, LF, LF]); // Extra paper feed for easy tear
-      
-      // Cut paper (ignored gracefully if not supported by mobile printer)
-      add([GS, 0x56, 0x41, 0x10]); 
-
-      return new Uint8Array(data);
-    }
-
-    // --- NATIVE MINI RECEIPT PRINT ---
-    function triggerReceiptPrintNative() {
-      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Shop Branch', type: 'General' };
+      const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'Karobar Smart Store Branch', type: 'General' };
       const receiptId = 'REC-' + Math.floor(Math.random() * 900000 + 100000);
       const subtotal = cart.reduce((sum, item) => sum + (item.sellPrice * item.qtySelected), 0);
       const stamps = getSystemTimestamp();
@@ -3137,8 +3002,8 @@
       cart.forEach(item => {
         itemsRows += `
           <tr style="border-bottom: 1px dashed #000; font-size: 11px;">
-            <td style="padding: 5px 0;">${item.name}<br/><small style="font-size: 9px;">${item.qtySelected} x ${item.sellPrice.toFixed(2)}</small></td>
-            <td style="text-align: right; padding: 5px 0; font-family: monospace;">${(item.sellPrice * item.qtySelected).toFixed(2)}</td>
+            <td style="padding: 5px 0;">${item.name}<br/><small style="font-size: 9px;">${item.qtySelected} x ${fmt(item.sellPrice)}</small></td>
+            <td style="text-align: right; padding: 5px 0; font-family: monospace;">${fmt(item.sellPrice * item.qtySelected)}</td>
           </tr>
         `;
       });
@@ -3171,18 +3036,18 @@
           <div style="font-size: 11px; border-top: 1px solid #000; padding-top: 6px; margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
               <span>Subtotal:</span>
-              <span style="font-family: monospace;">${subtotal.toFixed(2)}</span>
+              <span style="font-family: monospace;">${fmt(subtotal)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-top: 3px;">
               <span>TOTAL:</span>
-              <span style="font-family: monospace;">${subtotal.toFixed(2)}</span>
+              <span style="font-family: monospace;">${fmt(subtotal)}</span>
             </div>
           </div>
 
           <div style="text-align: center; font-size: 9px; border-top: 1px dashed #000; padding-top: 8px;">
             <p style="margin: 0; font-weight: bold;">Thank you for shopping!</p>
             <p style="margin: 4px 0 0 0; font-size: 8px; color: #555;">
-              OnyxPOS Manager Systems
+              Karobar Smart Manager Systems
             </p>
           </div>
         </div>
@@ -3207,7 +3072,7 @@
       setTimeout(() => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'OnyxPOS Store Branch' };
+        const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'Karobar Smart Store Branch' };
         const stamps = getSystemTimestamp();
         
         // Universal Setup Header
@@ -3229,28 +3094,17 @@
         // Conditionals per tab
         if (reportType === 'register') {
           const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
-          const categories = [...new Set(items.map(i => i.category))].sort();
-
-          categories.forEach(cat => {
-            const catItems = items.filter(i => i.category === cat);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
-            doc.setTextColor(30);
-            doc.text(`Category: ${cat}`, 14, finalY);
-            finalY += 5;
-
-            doc.autoTable({
-              startY: finalY,
-              headStyles: { fillColor: [0, 0, 0] },
-              head: [['Product Name', 'Unit Cost', 'Retail Price', 'In Stock']],
-              body: catItems.map(i => [
-                i.name, 
-                i.costPrice.toFixed(2), 
-                i.sellPrice.toFixed(2), 
-                i.quantity
-              ])
-            });
-            finalY = doc.lastAutoTable.finalY + 10;
+          doc.autoTable({
+            startY: finalY,
+            headStyles: { fillColor: [0, 0, 0] },
+            head: [['Product Name', 'Category', 'Unit Cost', 'Retail Price', 'In Stock']],
+            body: items.map(i => [
+              i.name, 
+              i.category, 
+              fmt(i.costPrice), 
+              fmt(i.sellPrice), 
+              i.quantity
+            ])
           });
         } 
         
@@ -3260,31 +3114,21 @@
           const totalRetailVal = items.reduce((acc, curr) => acc + (curr.sellPrice * curr.quantity), 0);
           
           doc.setFont("helvetica", "bold");
-          doc.text(`Total Asset Stock Value: ${totalStockValue.toFixed(2)}`, 14, finalY);
-          doc.text(`Expected Retail Yield: ${totalRetailVal.toFixed(2)}`, 100, finalY);
-          finalY += 12;
+          doc.text(`Total Asset Stock Value: ${fmt(totalStockValue)}`, 14, finalY);
+          doc.text(`Expected Retail Yield: ${fmt(totalRetailVal)}`, 100, finalY);
+          finalY += 8;
 
-          const categories = [...new Set(items.map(i => i.category))].sort();
-          categories.forEach(cat => {
-            const catItems = items.filter(i => i.category === cat);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(11);
-            doc.setTextColor(50);
-            doc.text(`Section: ${cat}`, 14, finalY);
-            finalY += 4;
-
-            doc.autoTable({
-              startY: finalY,
-              headStyles: { fillColor: [0, 0, 0] },
-              head: [['Catalog ID / Name', 'Cost Price', 'Retail Price', 'Stock Level']],
-              body: catItems.map(i => [
-                `${i.name}\n(SKU: ${i.barcode || 'N/A'})`, 
-                i.costPrice.toFixed(2), 
-                i.sellPrice.toFixed(2), 
-                i.quantity
-              ])
-            });
-            finalY = doc.lastAutoTable.finalY + 10;
+          doc.autoTable({
+            startY: finalY,
+            headStyles: { fillColor: [0, 0, 0] },
+            head: [['Catalog ID / Name', 'Category', 'Cost Price', 'Retail Price', 'Stock Level']],
+            body: items.map(i => [
+              `${i.name}\n(SKU: ${i.barcode || 'N/A'})`, 
+              i.category, 
+              fmt(i.costPrice), 
+              fmt(i.sellPrice), 
+              i.quantity
+            ])
           });
         }
         
@@ -3305,9 +3149,9 @@
           }
           
           doc.setFont("helvetica", "bold");
-          doc.text(`Total Collectibles: +${totalReceivable.toFixed(2)}`, 14, finalY);
-          doc.text(`Total Payables: -${totalPayable.toFixed(2)}`, 80, finalY);
-          doc.text(`Net Exposure: ${(totalReceivable - totalPayable).toFixed(2)}`, 150, finalY);
+          doc.text(`Total Collectibles: +${fmt(totalReceivable)}`, 14, finalY);
+          doc.text(`Total Payables: -${fmt(totalPayable)}`, 80, finalY);
+          doc.text(`Net Exposure: ${fmt(totalReceivable - totalPayable)}`, 150, finalY);
           finalY += 10;
 
           doc.text("Active Debtors (Receivables)", 14, finalY);
@@ -3315,7 +3159,7 @@
             startY: finalY + 3,
             headStyles: { fillColor: [0, 200, 118] },
             head: [['Counterparty', 'Details', 'Due Date', 'Outstanding']],
-            body: outstandingOwedToUs.map(c => [c.name, c.desc, c.dueDate || '-', c.amount.toFixed(2)])
+            body: outstandingOwedToUs.map(c => [c.name, c.desc, c.dueDate || '-', fmt(c.amount)])
           });
 
           finalY = doc.lastAutoTable.finalY + 15;
@@ -3324,7 +3168,7 @@
             startY: finalY + 3,
             headStyles: { fillColor: [255, 23, 68] },
             head: [['Supplier', 'Details', 'Due Date', 'Amount Owed']],
-            body: outstandingWeOwe.map(c => [c.name, c.desc, c.dueDate || '-', c.amount.toFixed(2)])
+            body: outstandingWeOwe.map(c => [c.name, c.desc, c.dueDate || '-', fmt(c.amount)])
           });
         }
         
@@ -3349,8 +3193,8 @@
           }
           
           doc.setFont("helvetica", "bold");
-          doc.text(`Total Tracked Revenue: ${totalSalesRevenue.toFixed(2)}`, 14, finalY);
-          doc.text(`Total Tracked Profit: ${totalSalesProfit.toFixed(2)}`, 80, finalY);
+          doc.text(`Total Tracked Revenue: ${fmt(totalSalesRevenue)}`, 14, finalY);
+          doc.text(`Total Tracked Profit: ${fmt(totalSalesProfit)}`, 80, finalY);
           doc.text(`Operating Margin: ${overallMarginPct}%`, 150, finalY);
           finalY += 10;
 
@@ -3362,8 +3206,8 @@
               s.date.split(' ')[0], 
               s.itemName, 
               s.quantity, 
-              (s.sellPrice * s.quantity).toFixed(2), 
-              `+${s.totalProfit.toFixed(2)}`
+              fmt(s.sellPrice * s.quantity), 
+              `+${fmt(s.totalProfit)}`
             ])
           });
         }
@@ -3383,13 +3227,13 @@
             if(l.type === 'Opening') opening += l.amount;
             if(l.type === 'Income') income += l.amount;
             if(l.type === 'Expense') expense += l.amount;
-            tableBody.push([l.date, l.type, l.desc, l.type === 'Expense' ? `-${l.amount.toFixed(2)}` : `+${l.amount.toFixed(2)}`]);
+            tableBody.push([l.date, l.type, l.desc, l.type === 'Expense' ? `-${fmt(l.amount)}` : `+${fmt(l.amount)}`]);
           });
           
           filteredSales.forEach(s => {
             const rev = s.sellPrice * s.quantity;
             cashSales += rev;
-            tableBody.push([s.date, 'Sale', `Cash Sale: ${s.quantity}x ${s.itemName}`, `+${rev.toFixed(2)}`]);
+            tableBody.push([s.date, 'Sale', `Cash Sale: ${s.quantity}x ${s.itemName}`, `+${fmt(rev)}`]);
           });
           
           tableBody.sort((a,b) => new Date(b[0]) - new Date(a[0]));
@@ -3398,7 +3242,7 @@
           finalY += 8;
           
           doc.setFont("helvetica", "bold");
-          doc.text(`Calculated Drawer Balance: ${(opening + income + cashSales - expense).toFixed(2)}`, 14, finalY);
+          doc.text(`Calculated Drawer Balance: ${fmt(opening + income + cashSales - expense)}`, 14, finalY);
           finalY += 10;
 
           doc.autoTable({
@@ -3407,6 +3251,15 @@
             head: [['Timestamp', 'Log Type', 'Description / Reason', 'Amount Variance']],
             body: tableBody
           });
+        }
+
+        // Add creator credit footer to all generated pages
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.text("Made by Asim Lone @alfatehcreatives - https://alfatehcreative.agency/", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
         }
 
         // Fire Download

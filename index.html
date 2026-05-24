@@ -186,14 +186,21 @@
     <nav class="flex-1 p-5 space-y-1.5 overflow-y-auto no-scrollbar">
       <p class="text-[9px] uppercase tracking-widest font-extrabold text-muted px-2 mb-2">Operations</p>
       
-      <button onclick="switchTab('register')" id="nav-register" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all bg-black text-white">
-        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-        <span>Cashier Checkout</span>
-      </button>
+
 
       <button onclick="switchTab('cashdesk')" id="nav-cashdesk" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="banknote" class="w-4 h-4"></i>
         <span>Cash Desk / Register</span>
+      </button>
+
+            <button onclick="switchTab('register')" id="nav-register" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all bg-black text-white">
+        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+        <span>Cashier Checkout</span>
+      </button>
+
+            <button onclick="switchTab('credit')" id="nav-credit" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
+        <i data-lucide="credit-card" class="w-4 h-4"></i>
+        <span>Customer & Credit Ledger</span>
       </button>
 
       <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
@@ -201,10 +208,6 @@
         <span>Stock Manager</span>
       </button>
 
-      <button onclick="switchTab('credit')" id="nav-credit" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
-        <i data-lucide="credit-card" class="w-4 h-4"></i>
-        <span>Customer & Credit Ledger</span>
-      </button>
 
       <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="trending-up" class="w-4 h-4"></i>
@@ -287,17 +290,9 @@
                 <select 
                   id="registerCategoryFilter" 
                   onchange="renderRegisterGrid()"
-                  class="w-full sm:w-auto bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-bold text-black focus:outline-none"
+                  class="w-full bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-bold text-black focus:outline-none"
                 >
                   <option value="All">All Categories</option>
-                </select>
-                <!-- Quick Section Filter -->
-                <select 
-                  id="registerSectionFilter" 
-                  onchange="renderRegisterGrid()"
-                  class="w-full sm:w-auto bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-bold text-black focus:outline-none"
-                >
-                  <option value="All">All Sections</option>
                 </select>
               </div>
 
@@ -511,7 +506,7 @@
                 <i data-lucide="scan-barcode" class="w-4 h-4"></i> Scan
               </button>
 
-              <!-- Categories & Sections Filter -->
+              <!-- Categories Filter -->
               <div class="w-full sm:w-auto flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <select 
                   id="inventoryCategoryFilter" 
@@ -522,17 +517,6 @@
                 </select>
                 <button onclick="openCategoryModal()" title="Manage Categories" class="p-2.5 bg-zinc-100 border border-theme text-black rounded-xl shrink-0">
                   <i data-lucide="folder-open" class="w-4 h-4"></i>
-                </button>
-                
-                <select 
-                  id="inventorySectionFilter" 
-                  onchange="renderInventoryTable()"
-                  class="w-full sm:w-auto bg-zinc-100 border border-theme rounded-xl p-2.5 text-xs font-bold text-black focus:outline-none"
-                >
-                  <option value="All">All Sections</option>
-                </select>
-                <button onclick="openSectionModal()" title="Manage Sections" class="p-2.5 bg-zinc-100 border border-theme text-black rounded-xl shrink-0">
-                  <i data-lucide="layers" class="w-4 h-4"></i>
                 </button>
               </div>
             </div>
@@ -559,7 +543,7 @@
                 <thead>
                   <tr class="bg-zinc-100 border-b border-theme">
                     <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[25%]">Product Name / Barcode</th>
-                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[15%]">Category / Section</th>
+                    <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider w-[15%]">Category</th>
                     <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-right w-[10%]">Cost</th>
                     <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-right w-[10%]">Sale Price</th>
                     <th class="p-1 sm:p-4 text-[7px] sm:text-[10px] font-bold text-muted uppercase tracking-wider text-center w-[10%]">In Stock</th>
@@ -686,7 +670,7 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Realized Profits Checkout Stream Logs (Right side) -->
+            <!-- Realized Profits Checkout Stream Logs (Left side PC) -->
             <div class="lg:col-span-2 panel-card border border-theme rounded-[22px] p-5 space-y-4">
               <div>
                 <h3 class="font-black text-base text-black">Completed Margin Streams</h3>
@@ -711,12 +695,9 @@
                 </table>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sandbox Estimator Tool (On the left) -->
-            <div class="panel-card border border-theme rounded-[22px] p-5 space-y-4 h-fit">
+            
+            <!-- Sandbox Estimator Tool (Right side PC / Downside Mobile) -->
+            <div class="lg:col-span-1 panel-card border border-theme rounded-[22px] p-5 space-y-4 h-fit">
               <div>
                 <h3 class="font-black text-base text-black">Margin Sandbox</h3>
                 <p class="text-xs text-muted">Mock up pricing margins instantly.</p>
@@ -809,8 +790,11 @@
                   </span>
                 </div>
               </div>
-
             </div>
+
+          </div>
+        </div>
+      </div>
 
 
       <!-- ========================================== -->
@@ -1096,15 +1080,6 @@
                 <!-- Populated via Categories dataset -->
               </select>
             </div>
-            <div>
-              <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Section (Optional)</label>
-              <select 
-                id="modalInvSection"
-                class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-bold text-black focus:outline-none"
-              >
-                <!-- Populated via Sections dataset -->
-              </select>
-            </div>
           </div>
         </div>
 
@@ -1141,9 +1116,6 @@
         </div>
 
         <div class="flex justify-end gap-1.5">
-          <button onclick="triggerInlineSectionCreation()" class="py-2 px-3 bg-zinc-200 border border-theme text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 text-black">
-            <i data-lucide="layers" class="w-3.5 h-3.5"></i> Add Section
-          </button>
           <button onclick="triggerInlineCategoryCreation()" class="py-2 px-3 bg-zinc-200 border border-theme text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 text-black">
             <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> Add Category
           </button>
@@ -1187,43 +1159,6 @@
           <label class="block text-[10px] text-muted uppercase font-bold mb-2">Registered Categories</label>
           <div id="modalCategoryList" class="space-y-1.5 max-h-[150px] overflow-y-auto no-scrollbar">
             <!-- Dynamic categories list -->
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 4.5. MODAL: ADD MANUAL SECTIONS -->
-  <div id="modalSection" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
-    <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-sm shadow-2xl relative space-y-5">
-      <div class="flex justify-between items-center">
-        <h3 class="text-base font-black uppercase text-black">Manage Sections</h3>
-        <button onclick="closeSectionModal()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
-          <i data-lucide="x" class="w-5 h-5 text-muted"></i>
-        </button>
-      </div>
-
-      <div class="space-y-4">
-        <div>
-          <label class="block text-[10px] text-muted uppercase font-bold mb-1.5">Section Name</label>
-          <input 
-            type="text" 
-            id="newSectionName"
-            placeholder="Write Section Name Here" 
-            class="w-full bg-zinc-100 border border-theme rounded-xl p-3 text-xs font-semibold text-black focus:outline-none"
-          />
-        </div>
-
-        <button onclick="saveNewSection()" class="w-full py-3 bg-black text-white font-black rounded-xl text-xs uppercase tracking-wide">
-          Add Section
-        </button>
-
-        <hr class="border-theme" />
-
-        <div>
-          <label class="block text-[10px] text-muted uppercase font-bold mb-2">Registered Sections</label>
-          <div id="modalSectionList" class="space-y-1.5 max-h-[150px] overflow-y-auto no-scrollbar">
-            <!-- Dynamic sections list -->
           </div>
         </div>
       </div>
@@ -1327,7 +1262,6 @@
       businesses: [],
       currentBusinessId: '',
       categories: [],
-      sections: [], // New: Sections tracking
       inventory: [],
       credits: [],
       sales: [],
@@ -1516,7 +1450,8 @@
           state = JSON.parse(stored);
           // Initialize new properties if migrating from older version
           state.cashLogs = state.cashLogs || [];
-          state.sections = state.sections || []; // Init sections if legacy
+          
+          // Safety cleanup: If old state had sections, it won't crash since we just ignore it moving forward
         } catch (e) {
           console.error("Critical database corruption on load.", e);
         }
@@ -1793,7 +1728,6 @@
       }
 
       rebuildCategoryDropdowns();
-      rebuildSectionDropdowns();
       renderActiveTabData();
     }
 
@@ -1824,36 +1758,6 @@
       }
       if (modalInvCat) {
         modalInvCat.innerHTML = optionsMarkupDirect.join('');
-      }
-    }
-
-    function rebuildSectionDropdowns() {
-      const registerSec = document.getElementById('registerSectionFilter');
-      const invSec = document.getElementById('inventorySectionFilter');
-      const modalInvSec = document.getElementById('modalInvSection');
-
-      const activeRegVal = registerSec ? registerSec.value : 'All';
-      const activeInvVal = invSec ? invSec.value : 'All';
-
-      const optionsMarkupAll = ['<option value="All">All Sections</option>'];
-      const optionsMarkupDirect = ['<option value="">None</option>'];
-
-      state.sections.forEach(sec => {
-        const rawOpt = `<option value="${sec}">${sec}</option>`;
-        optionsMarkupAll.push(rawOpt);
-        optionsMarkupDirect.push(rawOpt);
-      });
-
-      if (registerSec) {
-        registerSec.innerHTML = optionsMarkupAll.join('');
-        registerSec.value = activeRegVal;
-      }
-      if (invSec) {
-        invSec.innerHTML = optionsMarkupAll.join('');
-        invSec.value = activeInvVal;
-      }
-      if (modalInvSec) {
-        modalInvSec.innerHTML = optionsMarkupDirect.join('');
       }
     }
 
@@ -1901,7 +1805,7 @@
 
 
     // ==========================================
-    // 2. CATEGORIES & SECTIONS HUB ACTIONS
+    // 2. CATEGORIES HUB ACTIONS
     // ==========================================
     function openCategoryModal() {
       document.getElementById('modalCategory').classList.remove('hidden');
@@ -1982,86 +1886,6 @@
       };
     }
 
-    // --- SECTIONS MANAGEMENT ---
-    function openSectionModal() {
-      document.getElementById('modalSection').classList.remove('hidden');
-      renderSectionsList();
-    }
-
-    let defaultSectionCloseHook = null;
-
-    function closeSectionModal() {
-      document.getElementById('modalSection').classList.add('hidden');
-      if (defaultSectionCloseHook) {
-        defaultSectionCloseHook();
-        defaultSectionCloseHook = null;
-      }
-    }
-
-    function renderSectionsList() {
-      const listContainer = document.getElementById('modalSectionList');
-      listContainer.innerHTML = '';
-
-      if (state.sections.length === 0) {
-        listContainer.innerHTML = '<p class="text-[10px] text-muted py-3 text-center">No Sections Active.</p>';
-        return;
-      }
-
-      state.sections.forEach(sec => {
-        const div = document.createElement('div');
-        div.className = "flex justify-between items-center bg-zinc-100 px-3 py-2 rounded-lg border border-theme";
-        div.innerHTML = `
-          <span class="text-xs font-bold text-black">${sec}</span>
-          <button onclick="triggerSectionDeletion('${sec}')" class="text-muted hover:text-vibrantRed transition-colors">
-            <i data-lucide="trash" class="w-4 h-4"></i>
-          </button>
-        `;
-        listContainer.appendChild(div);
-      });
-      lucide.createIcons();
-    }
-
-    function saveNewSection() {
-      const inp = document.getElementById('newSectionName');
-      const val = inp.value.trim();
-
-      if (!val) {
-        showCustomAlert("Section name cannot be empty.", "Validation Failed");
-        return;
-      }
-      if (state.sections.includes(val)) {
-        showCustomAlert("This section already exists.", "Duplicate Entry");
-        return;
-      }
-
-      state.sections.push(val);
-      saveStateToStorage();
-      inp.value = '';
-      
-      rebuildSectionDropdowns();
-      renderSectionsList();
-      showNotification(`Section "${val}" Registered.`);
-    }
-
-    function triggerSectionDeletion(sec) {
-      showCustomConfirm(`Are you sure you want to delete section "${sec}"?`, function() {
-        state.sections = state.sections.filter(s => s !== sec);
-        saveStateToStorage();
-        rebuildSectionDropdowns();
-        renderSectionsList();
-        showNotification(`Section "${sec}" Deleted.`);
-      }, "Remove Section");
-    }
-
-    function triggerInlineSectionCreation() {
-      document.getElementById('modalInventory').classList.add('hidden');
-      openSectionModal();
-      defaultSectionCloseHook = function() {
-        document.getElementById('modalInventory').classList.remove('hidden');
-        rebuildSectionDropdowns();
-      };
-    }
-
 
     // ==========================================
     // 3. INVENTORY PRODUCT MANAGEMENT
@@ -2075,13 +1899,11 @@
 
       document.getElementById('modalInventory').classList.remove('hidden');
       rebuildCategoryDropdowns();
-      rebuildSectionDropdowns();
 
       const titleEl = document.getElementById('modalInvTitle');
       const nameInp = document.getElementById('modalInvName');
       const barcodeInp = document.getElementById('modalInvBarcode');
       const catInp = document.getElementById('modalInvCategory');
-      const secInp = document.getElementById('modalInvSection');
       const qtyInp = document.getElementById('modalInvQty');
       const costInp = document.getElementById('modalInvCost');
       const sellInp = document.getElementById('modalInvSell');
@@ -2092,7 +1914,6 @@
         nameInp.value = itemToEdit.name;
         barcodeInp.value = itemToEdit.barcode || '';
         catInp.value = itemToEdit.category;
-        secInp.value = itemToEdit.section || '';
         qtyInp.value = itemToEdit.quantity;
         costInp.value = itemToEdit.costPrice;
         sellInp.value = itemToEdit.sellPrice;
@@ -2101,7 +1922,6 @@
         titleEl.innerText = "Add New Product";
         nameInp.value = '';
         barcodeInp.value = '';
-        secInp.value = '';
         qtyInp.value = '';
         costInp.value = '';
         sellInp.value = '';
@@ -2116,7 +1936,6 @@
       const name = document.getElementById('modalInvName').value.trim();
       const barcode = document.getElementById('modalInvBarcode').value.trim();
       const category = document.getElementById('modalInvCategory').value;
-      const section = document.getElementById('modalInvSection').value;
       const qty = parseInt(document.getElementById('modalInvQty').value) || 0;
       const cost = parseFloat(document.getElementById('modalInvCost').value) || 0;
       const sell = parseFloat(document.getElementById('modalInvSell').value) || 0;
@@ -2149,7 +1968,6 @@
               name,
               barcode,
               category,
-              section,
               quantity: qty,
               costPrice: cost,
               sellPrice: sell,
@@ -2166,7 +1984,6 @@
           name,
           barcode,
           category,
-          section,
           quantity: qty,
           costPrice: cost,
           sellPrice: sell,
@@ -2195,7 +2012,6 @@
       const tbody = document.getElementById('inventoryTableBody');
       const search = document.getElementById('inventorySearch').value.toLowerCase();
       const catFilter = document.getElementById('inventoryCategoryFilter').value;
-      const secFilter = document.getElementById('inventorySectionFilter').value;
 
       tbody.innerHTML = '';
 
@@ -2203,8 +2019,7 @@
         const isCurrentBiz = item.businessId === state.currentBusinessId;
         const matchesSearch = item.name.toLowerCase().includes(search) || (item.barcode && item.barcode.includes(search));
         const matchesCat = (catFilter === 'All') || (item.category === catFilter);
-        const matchesSec = (secFilter === 'All') || (item.section === secFilter) || (secFilter === '' && !item.section);
-        return isCurrentBiz && matchesSearch && matchesCat && matchesSec;
+        return isCurrentBiz && matchesSearch && matchesCat;
       });
 
       if (filtered.length === 0) {
@@ -2220,57 +2035,75 @@
         return;
       }
 
+      // Group by category
+      const grouped = {};
       filtered.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-zinc-100 transition-colors";
-        tr.innerHTML = `
-          <td class="p-1 sm:p-4 align-top">
-            <div class="font-extrabold text-[8px] sm:text-sm text-black">${item.name}</div>
-            <div class="text-[7px] sm:text-[9px] text-muted font-mono flex items-center gap-1 mt-0.5">
-              <i data-lucide="barcode" class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"></i> ${item.barcode || 'N/A'}
-            </div>
-          </td>
-          <td class="p-1 sm:p-4 align-top">
-            <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-zinc-200 text-black rounded-full text-[7px] sm:text-[10px] font-bold border border-theme inline-block">
-              ${item.category}
-            </span>
-            ${item.section ? `
-            <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-zinc-100 text-muted rounded-full text-[7px] sm:text-[10px] font-bold border border-theme inline-block mt-1">
-              ${item.section}
-            </span>
-            ` : ''}
-          </td>
-          <td class="p-1 sm:p-4 align-top text-right font-mono font-semibold text-zinc-600">
-            ${fmt(item.costPrice)}
-          </td>
-          <td class="p-1 sm:p-4 align-top text-right font-mono font-black text-black">
-            ${fmt(item.sellPrice)}
-          </td>
-          <td class="p-1 sm:p-4 align-top text-center">
-            <span class="px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[8px] sm:text-xs font-black font-mono inline-block min-w-[30px] sm:min-w-[50px] ${
-              item.quantity === 0 ? 'bg-vibrantRed/10 text-vibrantRed border border-vibrantRed/20' :
-              item.quantity <= 10 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
-              'bg-vibrantGreen/10 text-vibrantGreen border border-vibrantGreen/20'
-            }">
-              ${item.quantity}
-            </span>
-          </td>
-          <td class="p-1 sm:p-4 align-top space-y-0.5 hidden sm:table-cell">
-            <div class="text-[7px] sm:text-[10px] text-muted">Created: ${item.dateAdded}</div>
-            <div class="text-[7px] sm:text-[10px] text-muted">Updated: ${item.dateUpdated}</div>
-          </td>
-          <td class="p-1 sm:p-4 align-top text-right">
-            <div class="flex items-center justify-end gap-1">
-              <button onclick='openInventoryModal(${JSON.stringify(item).replace(/'/g, "&#39;")})' class="p-1.5 sm:p-2 text-black hover:bg-zinc-200 rounded-lg sm:rounded-xl transition-colors">
-                <i data-lucide="pencil" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-              </button>
-              <button onclick="triggerInventoryDeletion('${item.id}')" class="p-1.5 sm:p-2 hover:bg-vibrantRed/20 text-muted hover:text-vibrantRed rounded-lg sm:rounded-xl transition-colors">
-                <i data-lucide="trash" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-              </button>
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+      });
+
+      Object.keys(grouped).sort().forEach(categoryName => {
+        // Add Category Section Divider
+        const headerRow = document.createElement('tr');
+        headerRow.className = "bg-zinc-100 border-y border-theme";
+        headerRow.innerHTML = `
+          <td colspan="7" class="p-2 sm:p-4 text-[9px] sm:text-xs font-black uppercase text-black tracking-widest bg-zinc-200/50">
+            <div class="flex items-center gap-2">
+              <i data-lucide="folder" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted"></i>
+              ${categoryName}
+              <span class="ml-auto text-[8px] sm:text-[10px] text-muted font-bold normal-case">${grouped[categoryName].length} items</span>
             </div>
           </td>
         `;
-        tbody.appendChild(tr);
+        tbody.appendChild(headerRow);
+
+        grouped[categoryName].forEach(item => {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-zinc-100 transition-colors";
+          tr.innerHTML = `
+            <td class="p-1 sm:p-4 align-top">
+              <div class="font-extrabold text-[8px] sm:text-sm text-black">${item.name}</div>
+              <div class="text-[7px] sm:text-[9px] text-muted font-mono flex items-center gap-1 mt-0.5">
+                <i data-lucide="barcode" class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"></i> ${item.barcode || 'N/A'}
+              </div>
+            </td>
+            <td class="p-1 sm:p-4 align-top">
+              <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-zinc-200 text-black rounded-full text-[7px] sm:text-[10px] font-bold border border-theme inline-block">
+                ${item.category}
+              </span>
+            </td>
+            <td class="p-1 sm:p-4 align-top text-right font-mono font-semibold text-zinc-600">
+              ${fmt(item.costPrice)}
+            </td>
+            <td class="p-1 sm:p-4 align-top text-right font-mono font-black text-black">
+              ${fmt(item.sellPrice)}
+            </td>
+            <td class="p-1 sm:p-4 align-top text-center">
+              <span class="px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[8px] sm:text-xs font-black font-mono inline-block min-w-[30px] sm:min-w-[50px] ${
+                item.quantity === 0 ? 'bg-vibrantRed/10 text-vibrantRed border border-vibrantRed/20' :
+                item.quantity <= 10 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                'bg-vibrantGreen/10 text-vibrantGreen border border-vibrantGreen/20'
+              }">
+                ${item.quantity}
+              </span>
+            </td>
+            <td class="p-1 sm:p-4 align-top space-y-0.5 hidden sm:table-cell">
+              <div class="text-[7px] sm:text-[10px] text-muted">Created: ${item.dateAdded}</div>
+              <div class="text-[7px] sm:text-[10px] text-muted">Updated: ${item.dateUpdated}</div>
+            </td>
+            <td class="p-1 sm:p-4 align-top text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button onclick='openInventoryModal(${JSON.stringify(item).replace(/'/g, "&#39;")})' class="p-1.5 sm:p-2 text-black hover:bg-zinc-200 rounded-lg sm:rounded-xl transition-colors">
+                  <i data-lucide="pencil" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+                </button>
+                <button onclick="triggerInventoryDeletion('${item.id}')" class="p-1.5 sm:p-2 hover:bg-vibrantRed/20 text-muted hover:text-vibrantRed rounded-lg sm:rounded-xl transition-colors">
+                  <i data-lucide="trash" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
       });
       lucide.createIcons();
     }
@@ -2298,7 +2131,6 @@
       const grid = document.getElementById('registerItemGrid');
       const search = document.getElementById('registerSearch').value.toLowerCase();
       const catFilter = document.getElementById('registerCategoryFilter').value;
-      const secFilter = document.getElementById('registerSectionFilter').value;
 
       grid.innerHTML = '';
 
@@ -2306,8 +2138,7 @@
         const isCurrentBiz = item.businessId === state.currentBusinessId;
         const matchesSearch = item.name.toLowerCase().includes(search) || (item.barcode && item.barcode.includes(search));
         const matchesCat = (catFilter === 'All') || (item.category === catFilter);
-        const matchesSec = (secFilter === 'All') || (item.section === secFilter) || (secFilter === '' && !item.section);
-        return isCurrentBiz && matchesSearch && matchesCat && matchesSec;
+        return isCurrentBiz && matchesSearch && matchesCat;
       });
 
       if (items.length === 0) {
@@ -2325,49 +2156,69 @@
         return;
       }
 
+      // Group by category
+      const grouped = {};
       items.forEach(item => {
-        const isOutOfStock = item.quantity === 0;
-        const isLowStock = item.quantity <= 10 && !isOutOfStock;
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+      });
 
-        const card = document.createElement('div');
-        // Compact alignment
-        card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
-          isOutOfStock 
-            ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
-            : 'hover:border-current hover:shadow-md'
-        }`;
-        
-        if (!isOutOfStock) {
-          card.onclick = () => addProductToCart(item);
-        }
-
-        card.innerHTML = `
-          <div class="flex flex-col h-full text-left">
-            <div class="flex justify-between items-center gap-0.5 mb-1 sm:mb-2">
-              <span class="px-1 py-0.2 bg-zinc-100 border border-theme text-black rounded text-[6px] sm:text-[9px] font-bold uppercase tracking-wider truncate max-w-[32px] sm:max-w-[100px]" title="${item.category}${item.section ? ' > ' + item.section : ''}">
-                ${item.category} ${item.section ? `· ${item.section}` : ''}
-              </span>
-              ${
-                isOutOfStock ? '<span class="px-1 py-0.2 bg-vibrantRed/15 text-vibrantRed rounded text-[6px] sm:text-[9px] font-black uppercase">0</span>' :
-                isLowStock ? `<span class="px-1 py-0.2 bg-amber-500/15 text-amber-500 rounded text-[6px] sm:text-[9px] font-black">${item.quantity}</span>` :
-                `<span class="px-1 py-0.2 bg-vibrantGreen/15 text-vibrantGreen rounded text-[6px] sm:text-[9px] font-bold">${item.quantity}</span>`
-              }
-            </div>
-            <h3 class="font-bold text-[7px] sm:text-xs line-clamp-2 min-h-[20px] sm:min-h-[34px] text-black leading-tight">${item.name}</h3>
-            ${item.barcode ? `<span class="text-[5px] sm:text-[8px] text-muted font-mono flex items-center gap-0.5 mt-0.5 truncate"><i data-lucide="barcode" class="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5"></i> ${item.barcode}</span>` : ''}
-            
-            <div class="mt-auto pt-1 sm:pt-2.5 border-t border-theme flex items-center justify-between gap-0.5">
-              <div>
-                <p class="text-[7px] sm:text-xs font-black font-mono text-black">${fmt(item.sellPrice)}</p>
-              </div>
-              <div class="p-0.5 sm:p-1.5 bg-zinc-150 border border-theme text-black rounded hover:bg-zinc-200 transition-colors flex items-center justify-center">
-                <i data-lucide="plus" class="w-2 h-2 sm:w-3.5 sm:h-3.5"></i>
-              </div>
-            </div>
-          </div>
+      Object.keys(grouped).sort().forEach(categoryName => {
+        // Add Category Header
+        const header = document.createElement('div');
+        header.className = 'col-span-full flex items-center justify-between pb-2 pt-4 mt-2 border-b border-theme first:mt-0 first:pt-0';
+        header.innerHTML = `
+          <h3 class="font-black text-[10px] sm:text-xs uppercase text-black tracking-widest flex items-center gap-1.5">
+            <i data-lucide="folder" class="w-3 h-3 sm:w-4 sm:h-4 text-muted"></i> ${categoryName}
+          </h3>
+          <span class="text-[8px] sm:text-[10px] font-bold text-muted bg-zinc-100 px-2 py-0.5 rounded-full border border-theme">${grouped[categoryName].length}</span>
         `;
+        grid.appendChild(header);
 
-        grid.appendChild(card);
+        grouped[categoryName].forEach(item => {
+          const isOutOfStock = item.quantity === 0;
+          const isLowStock = item.quantity <= 10 && !isOutOfStock;
+
+          const card = document.createElement('div');
+          // Compact alignment
+          card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
+            isOutOfStock 
+              ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
+              : 'hover:border-current hover:shadow-md'
+          }`;
+          
+          if (!isOutOfStock) {
+            card.onclick = () => addProductToCart(item);
+          }
+
+          card.innerHTML = `
+            <div class="flex flex-col h-full text-left">
+              <div class="flex justify-between items-center gap-0.5 mb-1 sm:mb-2">
+                <span class="px-1 py-0.2 bg-zinc-100 border border-theme text-black rounded text-[6px] sm:text-[9px] font-bold uppercase tracking-wider truncate max-w-[32px] sm:max-w-[100px]" title="${item.category}">
+                  ${item.category}
+                </span>
+                ${
+                  isOutOfStock ? '<span class="px-1 py-0.2 bg-vibrantRed/15 text-vibrantRed rounded text-[6px] sm:text-[9px] font-black uppercase">0</span>' :
+                  isLowStock ? `<span class="px-1 py-0.2 bg-amber-500/15 text-amber-500 rounded text-[6px] sm:text-[9px] font-black">${item.quantity}</span>` :
+                  `<span class="px-1 py-0.2 bg-vibrantGreen/15 text-vibrantGreen rounded text-[6px] sm:text-[9px] font-bold">${item.quantity}</span>`
+                }
+              </div>
+              <h3 class="font-bold text-[7px] sm:text-xs line-clamp-2 min-h-[20px] sm:min-h-[34px] text-black leading-tight">${item.name}</h3>
+              ${item.barcode ? `<span class="text-[5px] sm:text-[8px] text-muted font-mono flex items-center gap-0.5 mt-0.5 truncate"><i data-lucide="barcode" class="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5"></i> ${item.barcode}</span>` : ''}
+              
+              <div class="mt-auto pt-1 sm:pt-2.5 border-t border-theme flex items-center justify-between gap-0.5">
+                <div>
+                  <p class="text-[7px] sm:text-xs font-black font-mono text-black">${fmt(item.sellPrice)}</p>
+                </div>
+                <div class="p-0.5 sm:p-1.5 bg-zinc-150 border border-theme text-black rounded hover:bg-zinc-200 transition-colors flex items-center justify-center">
+                  <i data-lucide="plus" class="w-2 h-2 sm:w-3.5 sm:h-3.5"></i>
+                </div>
+              </div>
+            </div>
+          `;
+
+          grid.appendChild(card);
+        });
       });
       lucide.createIcons();
     }
@@ -3296,11 +3147,10 @@
           doc.autoTable({
             startY: finalY,
             headStyles: { fillColor: [0, 0, 0] },
-            head: [['Product Name', 'Category', 'Section', 'Unit Cost', 'Retail Price', 'In Stock']],
+            head: [['Product Name', 'Category', 'Unit Cost', 'Retail Price', 'In Stock']],
             body: items.map(i => [
               i.name, 
               i.category, 
-              i.section || '-',
               fmt(i.costPrice), 
               fmt(i.sellPrice), 
               i.quantity
@@ -3321,11 +3171,10 @@
           doc.autoTable({
             startY: finalY,
             headStyles: { fillColor: [0, 0, 0] },
-            head: [['Catalog ID / Name', 'Category', 'Section', 'Cost Price', 'Retail Price', 'Stock Level']],
+            head: [['Catalog ID / Name', 'Category', 'Cost Price', 'Retail Price', 'Stock Level']],
             body: items.map(i => [
               `${i.name}\n(SKU: ${i.barcode || 'N/A'})`, 
               i.category, 
-              i.section || '-',
               fmt(i.costPrice), 
               fmt(i.sellPrice), 
               i.quantity

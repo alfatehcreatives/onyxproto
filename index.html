@@ -29,6 +29,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   
+  <!-- Hardcoded Promo Code Data -->
+  <script src="codes.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -87,7 +90,7 @@
     @media print {
       @page {
         margin: 0mm;
-        size: auto;
+        size: 58mm auto; /* Configured specifically for thermal roll */
       }
       body {
         background: #FFFFFF !important;
@@ -101,7 +104,7 @@
       #printArea {
         display: block !important;
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 58mm !important; /* Forces layout scaling down for thermal bluetooth printers */
         height: auto !important;
         position: absolute !important;
         left: 0 !important;
@@ -109,7 +112,7 @@
         visibility: visible !important;
         opacity: 1 !important;
         margin: 0 !important;
-        padding: 10px !important;
+        padding: 4px !important;
       }
       #printArea * {
         visibility: visible !important;
@@ -129,7 +132,7 @@
   <!-- ========================================== -->
   <div class="lg:hidden w-full panel-card border-b border-theme p-5 flex items-center justify-between z-30 sticky top-0 shadow-sm">
     <div class="flex items-center gap-3">
-<div class="w-10 h-10 overflow-hidden rounded-xl"><img src="icon.png" alt="Icon" class="w-full h-full object-cover" /></div>
+      <div class="w-10 h-10 overflow-hidden rounded-xl bg-black flex items-center justify-center font-bold text-white">KS</div>
       <div>
         <h1 class="font-extrabold text-base tracking-tight text-black">Karobar Smart</h1>
         <p class="text-[9px] tracking-widest uppercase font-bold text-muted">Business Manager</p>
@@ -186,19 +189,17 @@
     <nav class="flex-1 p-5 space-y-1.5 overflow-y-auto no-scrollbar">
       <p class="text-[9px] uppercase tracking-widest font-extrabold text-muted px-2 mb-2">Operations</p>
       
-
-
       <button onclick="switchTab('cashdesk')" id="nav-cashdesk" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="banknote" class="w-4 h-4"></i>
         <span>Cash Desk / Register</span>
       </button>
 
-            <button onclick="switchTab('register')" id="nav-register" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all bg-black text-white">
+      <button onclick="switchTab('register')" id="nav-register" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all bg-black text-white">
         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
         <span>Cashier Checkout</span>
       </button>
 
-            <button onclick="switchTab('credit')" id="nav-credit" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
+      <button onclick="switchTab('credit')" id="nav-credit" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="credit-card" class="w-4 h-4"></i>
         <span>Customer & Credit Ledger</span>
       </button>
@@ -207,7 +208,6 @@
         <i data-lucide="package" class="w-4 h-4"></i>
         <span>Stock Manager</span>
       </button>
-
 
       <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-[16px] text-xs font-bold transition-all text-muted hover:bg-zinc-200 hover:text-black">
         <i data-lucide="trending-up" class="w-4 h-4"></i>
@@ -225,6 +225,14 @@
       <div class="text-center text-[10px] text-muted font-bold">
         Made by Asim Lone <a href="https://alfatehcreative.agency/" target="_blank" class="text-black hover:underline">@alfatehcreatives</a>
       </div>
+
+      <!-- PROMO CODE OPTION -->
+      <div class="p-1 bg-zinc-100 rounded-xl border border-theme">
+        <button onclick="openLicenseModal()" class="w-full py-2.5 bg-white text-black hover:bg-zinc-50 border border-theme text-[11px] font-black uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 shadow-sm">
+          <i data-lucide="key" class="w-3.5 h-3.5"></i> Promo / Access Code
+        </button>
+      </div>
+
       <button onclick="triggerHardResetConfirmation()" title="Wipe database & restart fresh" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all text-vibrantRed bg-vibrantRed/10 hover:bg-vibrantRed/20 border border-vibrantRed/20">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
         <span>Wipe Database</span>
@@ -392,7 +400,7 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- 2. TAB: CASH DESK (NEW) -->
+      <!-- 2. TAB: CASH DESK -->
       <!-- ========================================== -->
       <div id="tab-cashdesk" class="tab-pane hidden">
         <div class="space-y-6">
@@ -458,7 +466,6 @@
             <div class="p-4 border-b border-theme bg-zinc-50">
               <h4 class="font-extrabold text-xs uppercase tracking-wider text-black">Log Activity</h4>
             </div>
-            <!-- REMOVED overflow-x-auto & min-w to prevent scrolling and force wrapping -->
             <div class="w-full">
               <table class="w-full text-left border-collapse break-words whitespace-normal">
                 <thead>
@@ -537,7 +544,6 @@
 
           <!-- Main Inventory Board Table -->
           <div class="panel-card rounded-[22px] border border-theme overflow-hidden">
-            <!-- NO HORIZONTAL SCROLL: removed overflow-x-auto, min-w, and whitespace-nowrap -->
             <div class="w-full">
               <table class="w-full text-left border-collapse break-words whitespace-normal">
                 <thead>
@@ -677,7 +683,6 @@
                 <p class="text-xs text-muted">Real-time profit tracking from cashier checkouts.</p>
               </div>
 
-              <!-- NO HORIZONTAL SCROLL: removed overflow-x-auto, min-w, and whitespace-nowrap -->
               <div class="w-full">
                 <table class="w-full text-left border-collapse break-words whitespace-normal">
                   <thead>
@@ -696,7 +701,7 @@
               </div>
             </div>
             
-            <!-- Sandbox Estimator Tool (Right side PC / Downside Mobile) -->
+            <!-- Sandbox Estimator Tool -->
             <div class="lg:col-span-1 panel-card border border-theme rounded-[22px] p-5 space-y-4 h-fit">
               <div>
                 <h3 class="font-black text-base text-black">Margin Sandbox</h3>
@@ -907,6 +912,71 @@
   <!-- MODALS SYSTEM -->
   <!-- ========================================== -->
   
+  <!-- S1. CRITICAL EXPIRED OVERLAY MODAL -->
+  <div id="modalExpiredBlocker" class="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4 hidden">
+    <div class="panel-card border-2 border-vibrantRed bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl text-center space-y-6">
+      <div class="w-16 h-16 bg-vibrantRed/10 text-vibrantRed rounded-full flex items-center justify-center mx-auto">
+        <i data-lucide="lock" class="w-8 h-8"></i>
+      </div>
+      <div>
+        <h3 class="text-2xl font-black text-black">Access Expired</h3>
+        <p class="text-xs text-muted mt-2 leading-relaxed">
+          Your unlimited evaluation period or subscription package of <strong>Karobar Smart</strong> has expired. To restore normal operations immediately, enter an access code.
+        </p>
+      </div>
+      
+      <div class="space-y-2">
+        <input 
+          type="text" 
+          id="blockerPromoInput" 
+          placeholder="Enter 8-digit or Lifetime Code" 
+          class="w-full bg-zinc-100 border border-theme p-3 text-center rounded-xl font-bold tracking-widest text-black placeholder:font-normal placeholder:tracking-normal focus:outline-none"
+        />
+        <button onclick="applyPromoCode(true)" class="w-full py-3 bg-black text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-zinc-800 transition-all">
+          Apply Activation Key
+        </button>
+      </div>
+
+      <div class="pt-4 border-t border-theme">
+        <p class="text-[10px] text-muted">
+          Don't have a code? Buy access directly:
+        </p>
+        <p class="text-[11px] font-black text-black mt-1">
+          Developed by Asim Lone <a href="https://alfatehcreative.agency/" target="_blank" class="underline text-blue-600">@alfatehcreatives</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2. STANDARD PROMO ENTRY MODAL -->
+  <div id="modalLicense" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+    <div class="panel-card border border-theme rounded-[32px] p-6 w-full max-w-sm shadow-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-black tracking-wide uppercase text-black">Promo / License Code</h3>
+        <button onclick="closeLicenseModal()" class="p-1.5 rounded-lg hover:bg-zinc-200 text-black">
+          <i data-lucide="x" class="w-5 h-5 text-muted"></i>
+        </button>
+      </div>
+      <p class="text-xs text-muted leading-relaxed">
+        Apply promotional voucher keys or subscription extensions below. Your active license metadata status will update instantly.
+      </p>
+      <div id="licenseStatusIndicator" class="p-3 bg-zinc-100 rounded-xl border border-theme text-[11px] text-black">
+        <!-- Dyn details -->
+      </div>
+      <div class="space-y-2">
+        <input 
+          type="text" 
+          id="standardPromoInput" 
+          placeholder="XXXX-XXXX" 
+          class="w-full bg-zinc-100 border border-theme p-2.5 rounded-lg text-center font-bold tracking-wider text-black focus:outline-none"
+        />
+        <button onclick="applyPromoCode(false)" class="w-full py-2.5 bg-black text-white rounded-lg text-xs font-bold uppercase hover:bg-zinc-800 transition-all">
+          Apply Code
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- A1. CUSTOM CONFIRMATION MODAL -->
   <div id="modalConfirm" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4 hidden">
     <div class="panel-card border border-theme rounded-[24px] p-6 w-full max-w-sm shadow-2xl space-y-4">
@@ -945,7 +1015,6 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <!-- HTML5 QR Scanner viewport placeholder -->
       <div id="cameraScanViewport" class="w-full bg-black rounded-2xl overflow-hidden border border-theme flex items-center justify-center" style="min-height: 250px; aspect-ratio: 1/1;"></div>
       <p class="text-[10px] text-muted text-center leading-relaxed">Place product barcode inside camera frames to scan automatically.</p>
     </div>
@@ -1240,7 +1309,7 @@
   <datalist id="borrowerNames"></datalist>
 
   <!-- Notification Banner system -->
-  <div id="customToast" class="fixed bottom-6 right-6 bg-black text-white border border-theme px-5 py-3.5 rounded-[18px] shadow-2xl z-50 flex items-center gap-3 translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+  <div id="customToast" class="fixed bottom-6 right-6 bg-black text-white border border-theme px-5 py-3.5 rounded-[18px] shadow-2xl z-[80] flex items-center gap-3 translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
     <div class="w-2.5 h-2.5 rounded-full bg-vibrantGreen animate-ping"></div>
     <span id="toastMessage" class="text-xs font-black tracking-wide">Operation Completed</span>
   </div>
@@ -1265,7 +1334,12 @@
       inventory: [],
       credits: [],
       sales: [],
-      cashLogs: []
+      cashLogs: [],
+      
+      // Licensing metadata details
+      licenseExpiry: null, // timestamp
+      licenseType: 'Trial', // 'Trial' | 'Premium'
+      appliedCodes: [] // avoid duplicate code application
     };
 
     let activeTab = 'register';
@@ -1288,12 +1362,10 @@
       setupKeyboardBarcodeScanner();
       lucide.createIcons();
 
-      if (state.businesses.length === 0) {
-        openBusinessModal();
-      } else {
-        renderGlobalContext();
-      }
-      
+      // Lazy check: Do not auto open setup on load. Setup only when operations are triggered.
+      renderGlobalContext();
+      checkLicenseIntegrity();
+
       // Default cash desk filter to today
       const todayDate = new Date().toISOString().split('T')[0];
       const cashFilter = document.getElementById('cashDeskFilterDate');
@@ -1315,13 +1387,127 @@
       }
     }
 
+    // --- LICENSE MANAGEMENT MOTOR ---
+    function checkLicenseIntegrity() {
+      // Default initialization
+      if (!state.licenseExpiry) {
+        state.licenseType = 'Trial';
+        // Give 7 days starting from now
+        state.licenseExpiry = Date.now() + (7 * 24 * 60 * 60 * 1000);
+        saveStateToStorage();
+      }
+
+      const timeLeft = state.licenseExpiry - Date.now();
+      const isExpired = timeLeft <= 0 && state.licenseType !== 'Premium';
+
+      const blocker = document.getElementById('modalExpiredBlocker');
+      if (isExpired) {
+        blocker.classList.remove('hidden');
+      } else {
+        blocker.classList.add('hidden');
+      }
+    }
+
+    function openLicenseModal() {
+      document.getElementById('modalLicense').classList.remove('hidden');
+      renderLicenseUI();
+    }
+
+    function closeLicenseModal() {
+      document.getElementById('modalLicense').classList.add('hidden');
+    }
+
+    function renderLicenseUI() {
+      const target = document.getElementById('licenseStatusIndicator');
+      if (!target) return;
+
+      const expiryDate = new Date(state.licenseExpiry).toLocaleDateString();
+      const isLifetime = state.licenseType === 'Premium';
+
+      if (isLifetime) {
+        target.innerHTML = `
+          <div class="font-bold text-vibrantGreen">Status: Premium (Lifetime Access)</div>
+          <div class="text-[10px] text-muted mt-1">Unlimited usage unlocked. Developed by Asim Lone.</div>
+        `;
+      } else {
+        const remainingDays = Math.ceil((state.licenseExpiry - Date.now()) / (24 * 60 * 60 * 1000));
+        const dayText = remainingDays > 0 ? `${remainingDays} Days remaining` : "Expired";
+        target.innerHTML = `
+          <div class="font-bold text-amber-500">Status: Free Trial (${dayText})</div>
+          <div class="text-[10px] text-muted mt-1">Expiry Date: ${expiryDate}. Apply standard codes to extend access.</div>
+        `;
+      }
+    }
+
+    function applyPromoCode(fromBlocker = false) {
+      const inputId = fromBlocker ? 'blockerPromoInput' : 'standardPromoInput';
+      const codeInp = document.getElementById(inputId);
+      if (!codeInp) return;
+
+      const code = codeInp.value.trim().toUpperCase();
+      if (!code) {
+        showCustomAlert("Please enter a valid promotional code.", "Code Entry Required");
+        return;
+      }
+
+      if (state.appliedCodes.includes(code)) {
+        showCustomAlert("This promotion code has already been applied on this branch database.", "Used Code Error");
+        return;
+      }
+
+      // Read safely from code bank loaded in codes.js or fallback standard
+      const bank = window.KAROBAR_CODES_BANK || { monthly: [], unlimited: [] };
+
+      // Type 1 check: Lifetime Codes
+      if (bank.unlimited.includes(code)) {
+        state.licenseType = 'Premium';
+        state.appliedCodes.push(code);
+        saveStateToStorage();
+        codeInp.value = '';
+        
+        document.getElementById('modalExpiredBlocker').classList.add('hidden');
+        closeLicenseModal();
+        showCustomAlert("Congratulations! You have successfully unlocked Karobar Smart Premium Lifetime license.", "Premium Access Enabled");
+        checkLicenseIntegrity();
+        return;
+      }
+
+      // Type 2 check: Monthly Codes (Must be 8-digits, start with 1, end with 1, and be inside the monthly codes bank)
+      const is8DigitRange = /^1\d{6}1$/.test(code);
+      if (is8DigitRange && bank.monthly.includes(code)) {
+        // Correct validation: Add 30 days to expiry
+        const base = Math.max(Date.now(), state.licenseExpiry);
+        state.licenseExpiry = base + (30 * 24 * 60 * 60 * 1000);
+        state.appliedCodes.push(code);
+        saveStateToStorage();
+        codeInp.value = '';
+
+        document.getElementById('modalExpiredBlocker').classList.add('hidden');
+        closeLicenseModal();
+        showCustomAlert("30-Day Extension code verified and applied. Your access period was updated.", "Access Period Extended");
+        checkLicenseIntegrity();
+        return;
+      }
+
+      showCustomAlert("Invalid Activation or Promotion Access Key. Please contact developed by Asim Lone @alfatehcreatives for official license codes.", "Verification Failed");
+    }
+
+    // --- LAZY BUSINESS INJECT ACTION GUARD ---
+    function ensureActiveBranch() {
+      // Return true if configured, else lazy open business registration modal safely.
+      if (state.businesses.length === 0) {
+        openBusinessModal();
+        return false;
+      }
+      return true;
+    }
+
     // --- KEYBOARD HARDWARE BARCODE SCANNER DETECTOR ---
     let barcodeBuffer = '';
     let lastKeyTime = Date.now();
 
     function setupKeyboardBarcodeScanner() {
       document.addEventListener('keydown', function(e) {
-        // Handle explicit input focus interactions
         if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
           if (document.activeElement.id === 'registerSearch' || document.activeElement.id === 'inventorySearch' || document.activeElement.id === 'modalInvBarcode') {
             if (e.key === 'Enter') {
@@ -1335,7 +1521,6 @@
           return;
         }
 
-        // Hardware scanners type extremely fast (< 50ms per key)
         const currentTime = Date.now();
         if (currentTime - lastKeyTime > 50) {
           barcodeBuffer = '';
@@ -1360,7 +1545,6 @@
         barcode = String(barcode).trim().replace(/[\r\n]/g, '');
         if (!barcode) return;
 
-        // 1. If Add/Edit Modal is open, populate exactly there and return
         const modalInv = document.getElementById('modalInventory');
         if (modalInv && !modalInv.classList.contains('hidden')) {
           const barcodeInp = document.getElementById('modalInvBarcode');
@@ -1372,7 +1556,6 @@
           return;
         }
 
-        // 2. Main workflow logic cross-referencing DB
         const product = state.inventory.find(i => String(i.barcode).trim() === barcode && i.businessId === state.currentBusinessId);
         
         if (product) {
@@ -1390,7 +1573,6 @@
             showNotification(`Scanned "${product.name}" successfully!`);
           }
         } else {
-          // IF NOT FOUND IN CATALOG:
           if (activeTab === 'inventory') {
             safePlayBeep();
             const invSearch = document.getElementById('inventorySearch');
@@ -1398,7 +1580,7 @@
             renderInventoryTable();
             showNotification(`Barcode ${barcode} not found. Ready to register.`);
           } else {
-            showCustomAlert(`Product with barcode "${barcode}" not found in your catalog. Please add it to the Stock Vault first.`, "Unknown Barcode");
+            showCustomAlert("Product with barcode \"" + barcode + "\" not found in your catalog. Please add it to the Stock Vault first.", "Unknown Barcode");
           }
         }
       } catch (err) {
@@ -1416,6 +1598,7 @@
         if (clockEl) {
           clockEl.innerText = formatted;
         }
+        checkLicenseIntegrity();
       }
       tick();
       setInterval(tick, 1000);
@@ -1437,7 +1620,6 @@
     // --- LOAD FROM STORAGE ---
     function loadStateFromStorage() {
       let stored = localStorage.getItem('karobarsmart_database_v3_premium');
-      // Migration handler from old OnyxPOS key
       if (!stored) {
         stored = localStorage.getItem('onyxpos_database_v3_premium');
         if (stored) {
@@ -1448,10 +1630,8 @@
       if (stored) {
         try {
           state = JSON.parse(stored);
-          // Initialize new properties if migrating from older version
           state.cashLogs = state.cashLogs || [];
-          
-          // Safety cleanup: If old state had sections, it won't crash since we just ignore it moving forward
+          state.appliedCodes = state.appliedCodes || [];
         } catch (e) {
           console.error("Critical database corruption on load.", e);
         }
@@ -1487,6 +1667,8 @@
     }
 
     function closeCustomAlert() {
+      document.getElementById('alertTitle').innerText = '';
+      document.getElementById('alertMessage').innerText = '';
       document.getElementById('modalAlert').classList.add('hidden');
     }
 
@@ -1517,13 +1699,14 @@
     function triggerHardResetConfirmation() {
       showCustomConfirm("Are you absolutely sure you want to completely wipe the entire POS database? This action is permanent.", function() {
         localStorage.removeItem('karobarsmart_database_v3_premium');
-        localStorage.removeItem('onyxpos_database_v3_premium'); // Also clear legacy
+        localStorage.removeItem('onyxpos_database_v3_premium');
         window.location.reload();
       }, "Hard Database Reset");
     }
 
     // --- CAMERA BARCODE SCANNER CORE ---
     function startBarcodeScan(inputId) {
+      if (!ensureActiveBranch()) return;
       barcodeTargetInputId = inputId;
       sessionScannedCodes.clear(); 
       document.getElementById('modalBarcodeScan').classList.remove('hidden');
@@ -1532,8 +1715,6 @@
         try {
           html5QrcodeScanner = new Html5Qrcode("cameraScanViewport");
           const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
-          
-          // Enhanced configuration to be more stable on mobile
           const cameraConfig = { facingMode: "environment" };
           
           html5QrcodeScanner.start(
@@ -1563,11 +1744,8 @@
                 setTimeout(() => { isProcessingScan = false; }, 1500);
               }
             },
-            () => {
-              // Quiet frame reading fails logic
-            }
+            () => {}
           ).catch((err) => {
-            // Fallback to automatic routing if environment explicitly fails on old phones
             html5QrcodeScanner.start(
               { facingMode: "user" }, 
               config, 
@@ -1646,6 +1824,9 @@
 
     // --- TAB FLOW CONTROLLER ---
     function switchTab(targetTab) {
+      if (!ensureActiveBranch() && targetTab !== 'register') {
+        return;
+      }
       activeTab = targetTab;
       
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
@@ -1808,6 +1989,7 @@
     // 2. CATEGORIES HUB ACTIONS
     // ==========================================
     function openCategoryModal() {
+      if (!ensureActiveBranch()) return;
       document.getElementById('modalCategory').classList.remove('hidden');
       renderCategoriesList();
     }
@@ -1891,6 +2073,8 @@
     // 3. INVENTORY PRODUCT MANAGEMENT
     // ==========================================
     function openInventoryModal(itemToEdit = false) {
+      if (!ensureActiveBranch()) return;
+
       if (state.categories.length === 0) {
         showCustomAlert("No categories configured yet! Setup at least one category to add product items.", "Setup Category First");
         openCategoryModal();
@@ -1949,7 +2133,6 @@
         return;
       }
 
-      // Check barcode conflict within this business branch
       if (barcode) {
         const conflict = state.inventory.find(i => i.barcode === barcode && i.businessId === state.currentBusinessId && (!currentEditingItem || i.id !== currentEditingItem.id));
         if (conflict) {
@@ -2035,7 +2218,6 @@
         return;
       }
 
-      // Group by category
       const grouped = {};
       filtered.forEach(item => {
         if (!grouped[item.category]) grouped[item.category] = [];
@@ -2043,7 +2225,6 @@
       });
 
       Object.keys(grouped).sort().forEach(categoryName => {
-        // Add Category Section Divider
         const headerRow = document.createElement('tr');
         headerRow.className = "bg-zinc-100 border-y border-theme";
         headerRow.innerHTML = `
@@ -2114,12 +2295,11 @@
     function handleRegisterSearchInput() {
       const val = document.getElementById('registerSearch').value.trim();
       if (val) {
-        // Direct matching barcode verification (supports continuous scanner streaming)
         const exactMatch = state.inventory.find(i => i.barcode && String(i.barcode).trim() === val && i.businessId === state.currentBusinessId);
         if (exactMatch) {
           safePlayBeep();
           addProductToCart(exactMatch);
-          document.getElementById('registerSearch').value = ''; // Instant checkout clearing
+          document.getElementById('registerSearch').value = ''; 
           renderRegisterGrid();
           return;
         }
@@ -2156,7 +2336,6 @@
         return;
       }
 
-      // Group by category
       const grouped = {};
       items.forEach(item => {
         if (!grouped[item.category]) grouped[item.category] = [];
@@ -2164,7 +2343,6 @@
       });
 
       Object.keys(grouped).sort().forEach(categoryName => {
-        // Add Category Header
         const header = document.createElement('div');
         header.className = 'col-span-full flex items-center justify-between pb-2 pt-4 mt-2 border-b border-theme first:mt-0 first:pt-0';
         header.innerHTML = `
@@ -2180,7 +2358,6 @@
           const isLowStock = item.quantity <= 10 && !isOutOfStock;
 
           const card = document.createElement('div');
-          // Compact alignment
           card.className = `panel-card rounded-[8px] sm:rounded-[18px] border p-1 sm:p-2.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
             isOutOfStock 
               ? 'opacity-40 bg-zinc-100 cursor-not-allowed' 
@@ -2224,6 +2401,7 @@
     }
 
     function addProductToCart(item) {
+      if (!ensureActiveBranch()) return;
       const existing = cart.find(c => c.id === item.id);
       
       if (item.quantity <= 0) {
@@ -2344,6 +2522,8 @@
     }
 
     function processCheckout() {
+      if (!ensureActiveBranch()) return;
+
       if (cart.length === 0) {
         showCustomAlert("The active receipt is empty.", "Checkout Error");
         return;
@@ -2387,11 +2567,10 @@
           quantity: c.qtySelected,
           totalProfit: parseFloat(itemProfit.toFixed(2)),
           date: stamps,
-          paymentMethod: paymentMethod // Tracked for Cash Desk
+          paymentMethod: paymentMethod 
         };
         state.sales.push(saleRecord);
 
-        // Deduct Warehouse stock levels
         state.inventory = state.inventory.map(inv => {
           if (inv.id === c.id) {
             return {
@@ -2415,9 +2594,10 @@
     }
 
     // ==========================================
-    // NEW: CASH DESK LOGIC
+    // 5. CASH DESK LOGIC
     // ==========================================
     function openCashModal(type) {
+      if (!ensureActiveBranch()) return;
       document.getElementById('modalCashType').value = type;
       
       let title = "";
@@ -2477,7 +2657,6 @@
       container.innerHTML = '';
       const filterDateStr = document.getElementById('cashDeskFilterDate').value;
       
-      // Filter out only active business logs and sales
       const logs = state.cashLogs.filter(c => c.businessId === state.currentBusinessId);
       const sales = state.sales.filter(s => s.businessId === state.currentBusinessId && s.paymentMethod === 'Cash');
       
@@ -2574,9 +2753,10 @@
 
 
     // ==========================================
-    // 5. CREDIT LOG GROUPED LEDGER
+    // 6. CREDIT LOG GROUPED LEDGER
     // ==========================================
     function openCreditModal() {
+      if (!ensureActiveBranch()) return;
       document.getElementById('modalCredit').classList.remove('hidden');
     }
 
@@ -2710,7 +2890,6 @@
       netEl.innerText = `${netPosition >= 0 ? '+' : '-'}${fmt(Math.abs(netPosition))}`;
       netEl.className = netPosition >= 0 ? "text-2xl font-black text-vibrantGreen font-mono" : "text-2xl font-black text-vibrantRed font-mono";
 
-      // Apply search filter if present
       const searchStr = document.getElementById('creditSearchFilter').value.toLowerCase();
       if(searchStr) {
         credits = credits.filter(c => 
@@ -2719,12 +2898,10 @@
         );
       }
 
-      // Apply date filters if they are present
       const startVal = document.getElementById('creditFilterStart').value;
       const endVal = document.getElementById('creditFilterEnd').value;
       const filteredCredits = filterDataByDateRange(credits, startVal, endVal);
 
-      // Group active lists
       const grouped = getGroupedCredits(filteredCredits);
 
       if (grouped.length === 0) {
@@ -2759,7 +2936,7 @@
             <div class="p-3 rounded-xl border border-theme text-xs flex justify-between items-start gap-2 ${isResolved ? 'bg-zinc-50 opacity-50' : ''}">
               <div class="space-y-1 min-w-0">
                 <div class="flex flex-wrap items-center gap-1.5">
-                  <span class="font-bold px-1.5 py-0.5 rounded text-[9px] uppercase font-bold ${ent.type === 'owe_us' ? 'bg-vibrantGreen/15 text-vibrantGreen' : 'bg-vibrantRed/15 text-vibrantRed'}">
+                  <span class="font-bold px-1.5 py-0.5 rounded text-[9px] uppercase ${ent.type === 'owe_us' ? 'bg-vibrantGreen/15 text-vibrantGreen' : 'bg-vibrantRed/15 text-vibrantRed'}">
                     ${ent.type === 'owe_us' ? 'Receivable' : 'Payable'}
                   </span>
                   <span class="text-[9px] text-muted">${ent.date}</span>
@@ -2804,7 +2981,7 @@
 
 
     // ==========================================
-    // 6. PROFIT MARGIN CALCULATOR & REAL-TIME REVENUE
+    // 7. PROFIT MARGIN CALCULATOR & REAL-TIME REVENUE
     // ==========================================
     function renderCalculatorOptions() {
       const select = document.getElementById('calcVaultImport');
@@ -2920,7 +3097,7 @@
 
 
     // ==========================================
-    // 7. ANALYTICS KPI & HISTORICAL AUDITS
+    // 8. ANALYTICS KPI & HISTORICAL AUDITS
     // ==========================================
     function renderAnalyticsReports() {
       const sales = state.sales.filter(s => s.businessId === state.currentBusinessId);
@@ -3033,10 +3210,11 @@
 
 
     // ==========================================
-    // 8. PRINT & EXPORT ENGINE
+    // 9. PRINT & EXPORT ENGINE
     // ==========================================
     
     // --- NATIVE MINI RECEIPT PRINT ---
+    // Fully rebuilt to support categories and Bluetooth thermal printers (58mm/80mm scaling optimized layout)
     function triggerReceiptPrint() {
       if (cart.length === 0) {
         showCustomAlert("The active ticket is empty.", "Print Error");
@@ -3052,30 +3230,36 @@
       cart.forEach(item => {
         itemsRows += `
           <tr style="border-bottom: 1px dashed #000; font-size: 11px;">
-            <td style="padding: 5px 0;">${item.name}<br/><small style="font-size: 9px;">${item.qtySelected} x ${fmt(item.sellPrice)}</small></td>
-            <td style="text-align: right; padding: 5px 0; font-family: monospace;">${fmt(item.sellPrice * item.qtySelected)}</td>
+            <td style="padding: 4px 0; text-align: left; line-height: 1.2;">
+              <span style="font-weight: bold;">${item.name}</span><br/>
+              <small style="font-size: 8px; color: #555; text-transform: uppercase;">[${item.category}]</small><br/>
+              <small style="font-size: 9px;">${item.qtySelected} x ${fmt(item.sellPrice)}</small>
+            </td>
+            <td style="text-align: right; padding: 4px 0; font-family: monospace; font-weight: bold; vertical-align: bottom;">
+              ${fmt(item.sellPrice * item.qtySelected)}
+            </td>
           </tr>
         `;
       });
 
       const receiptHTML = `
-        <div style="font-family: monospace; width: 100%; max-width: 280px; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; padding: 10px;">
-          <div style="text-align: center; margin-bottom: 10px;">
-            <h1 style="font-size: 18px; font-weight: bold; margin: 0; text-transform: uppercase;">${activeBiz.name}</h1>
-            <p style="font-size: 9px; margin: 3px 0 0 0; text-transform: uppercase; border-bottom: 1px dashed #000; padding-bottom: 8px;">Segment: ${activeBiz.type}</p>
+        <div style="font-family: monospace; width: 100%; max-width: 260px; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; padding: 4px;">
+          <div style="text-align: center; margin-bottom: 8px;">
+            <h1 style="font-size: 16px; font-weight: bold; margin: 0; text-transform: uppercase;">${activeBiz.name}</h1>
+            <p style="font-size: 9px; margin: 2px 0 0 0; text-transform: uppercase; border-bottom: 1px dashed #000; padding-bottom: 6px;">Store: ${activeBiz.type}</p>
           </div>
           
-          <div style="font-size: 9px; margin-bottom: 10px;">
-            <div>RECEIPT NO: ${receiptId}</div>
+          <div style="font-size: 9px; margin-bottom: 8px; line-height: 1.2;">
+            <div>RECEIPT: ${receiptId}</div>
             <div>DATE: ${stamps}</div>
-            <div>PAYMENT OPTION: ${paymentMethod}</div>
+            <div>METHOD: ${paymentMethod}</div>
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
             <thead>
               <tr style="border-bottom: 1px solid #000; font-size: 9px; text-transform: uppercase; text-align: left;">
-                <th style="padding-bottom: 3px;">Item</th>
-                <th style="text-align: right; padding-bottom: 3px;">Amount</th>
+                <th style="padding-bottom: 2px;">Item Info / Cat</th>
+                <th style="text-align: right; padding-bottom: 2px;">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -3083,21 +3267,21 @@
             </tbody>
           </table>
 
-          <div style="font-size: 11px; border-top: 1px solid #000; padding-top: 6px; margin-bottom: 15px;">
+          <div style="font-size: 11px; border-top: 1px solid #000; padding-top: 4px; margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
               <span>Subtotal:</span>
               <span style="font-family: monospace;">${fmt(subtotal)}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-top: 3px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-top: 2px; border-top: 1px dashed #000; padding-top: 2px;">
               <span>TOTAL:</span>
               <span style="font-family: monospace;">${fmt(subtotal)}</span>
             </div>
           </div>
 
-          <div style="text-align: center; font-size: 9px; border-top: 1px dashed #000; padding-top: 8px;">
+          <div style="text-align: center; font-size: 9px; border-top: 1px dashed #000; padding-top: 6px;">
             <p style="margin: 0; font-weight: bold;">Thank you for shopping!</p>
-            <p style="margin: 4px 0 0 0; font-size: 8px; color: #555;">
-              Karobar Smart Manager Systems
+            <p style="margin: 2px 0 0 0; font-size: 8px; color: #555;">
+              Karobar Smart developed by Asim Lone
             </p>
           </div>
         </div>
@@ -3116,16 +3300,15 @@
 
     // --- JSPDF FULL A4 EXPORT ENGINE ---
     function exportViewToPDF(reportType, titleLabel) {
+      if (!ensureActiveBranch()) return;
       showNotification(`Generating ${titleLabel} PDF File...`);
       
-      // Delay allows JS execution safely before rendering
       setTimeout(() => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const activeBiz = state.businesses.find(b => b.id === state.currentBusinessId) || { name: 'Karobar Smart Store Branch' };
         const stamps = getSystemTimestamp();
         
-        // Universal Setup Header
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
         doc.text(activeBiz.name.toUpperCase(), 14, 20);
@@ -3141,7 +3324,6 @@
 
         let finalY = 40;
 
-        // Conditionals per tab
         if (reportType === 'register') {
           const items = state.inventory.filter(i => i.businessId === state.currentBusinessId);
           doc.autoTable({
@@ -3303,7 +3485,6 @@
           });
         }
 
-        // Add creator credit footer to all generated pages
         const pageCount = doc.internal.getNumberOfPages();
         doc.setFontSize(8);
         doc.setTextColor(150);
@@ -3312,7 +3493,6 @@
           doc.text("Made by Asim Lone @alfatehcreatives - https://alfatehcreative.agency/", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
         }
 
-        // Fire Download
         const filename = `${activeBiz.name.replace(/\s+/g, '_')}_${titleLabel.replace(/\s+/g, '')}_${Date.now()}.pdf`;
         doc.save(filename);
         showNotification("PDF Exported Successfully!");
